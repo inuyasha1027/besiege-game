@@ -27,6 +27,9 @@ public class Edge {
         midpoint = new PointH((v0.loc.x + v1.loc.x) / 2, (v0.loc.y + v1.loc.y) / 2);
     }
     public boolean isImpassable() {
-    	return v0.waterBorder && v1.waterBorder;
+		return ((d0.water || d1.water));// && !(d0.water && d1.water));
+    }
+    public boolean isBorder() {
+    	return ((d0.water || d1.water) && !(d0.water && d1.water));
     }
 }
