@@ -18,4 +18,4 @@ AI:
 Besiege's AI is fully-automated, meaning if left alone without player participation the world can run smoothly forever.
 Rival factions will develop, kingdoms will fall and new ones will arise to take their place.
 
--- in progress
+see todo.txt for progress details
