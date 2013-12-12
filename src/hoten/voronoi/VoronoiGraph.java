@@ -639,12 +639,7 @@ public class VoronoiGraph {
             c.coast = numOcean > 0 && numLand > 0;
             c.water = c.border || ((numLand != c.touches.size()) && !c.coast);
         }
-        for (Edge edge : edges) {
-    		if (edge.d0.water != edge.d1.water) {
-    			edge.v0.waterBorder = true;
-    			edge.v1.waterBorder = true;
-    		}
-    	}
+        
     }
 
     private ArrayList<Corner> landCorners() {
