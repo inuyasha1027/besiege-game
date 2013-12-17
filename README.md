@@ -189,7 +189,7 @@ Each army has a "target," destination. Move in path towards that destination at 
 If army's destination is another Army or City, and distance to that army is <= .01 or some small number, triggers an interaction.
 How to store all armies? in a bag? or table?
 
-    tips: 
+tips:
 use object pooling for Armies (allows reuse and efficient memory use)
 when drawing background image, disable blending!
 CLEAR SCREEN EACH FRAME
