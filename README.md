@@ -18,10 +18,7 @@ AI:
 Besiege's AI is fully-automated, meaning if left alone without player participation the world can run smoothly forever.
 Rival factions will develop, kingdoms will fall and new ones will arise to take their place.
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 =======
->>>>>>> 6ac2ec71566fc8b0a2ce422a9c3cc45ddcc6f902
 Progress:
 
 Day 1: background map + camera
@@ -207,13 +204,4 @@ use distancefield for fonts
 
 tuning up later:
     check maxSpritesInBatch (int) field of SpriteBatch after running the program and set max to that number
-    
-    
-    
-    
-<<<<<<< HEAD
-=======
-see todo.txt for progress details
->>>>>>> 1571a8878f81caf3b218b0c327b43c8c02b369fa
-=======
->>>>>>> 6ac2ec71566fc8b0a2ce422a9c3cc45ddcc6f902
+   
