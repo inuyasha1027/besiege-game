@@ -227,8 +227,13 @@ public class VoronoiGraph {
 
         //draw via triangles
         if (drawBg) {
-            for (Center c : centers) {
-                g.setColor(key[c.index]);
+            g.setColor(new Color(OCEAN));
+//        	System.out.println(bounds.width + " width and height is " + bounds.height);
+        	g.fillRectangle(0, 0, (int) bounds.width, (int)bounds.height);
+        	// first cover bg with ocean (to eliminate black corners and white edges)
+            for (Center c : centers) {                
+            	
+            	g.setColor(key[c.index]);
                 if (c.ocean) {
                     g.setColor(new Color(OCEAN));
                 } else if (c.water) {
@@ -381,8 +386,8 @@ public class VoronoiGraph {
 //        			g.fillOval((int) (c.loc.x - 2), (int) (c.loc.y - 2), 4, 4);
 //            }
 //        }
-        g.setColor(Color.WHITE);
-        g.drawRectangle((int) bounds.x, (int) bounds.y, (int) bounds.width, (int) bounds.height);
+//        g.setColor(Color.WHITE);
+//        g.drawRectangle((int) bounds.x, (int) bounds.y, (int) bounds.width, (int) bounds.height);
     }
 
     private void buildGraph(Voronoi v) {
@@ -855,7 +860,7 @@ public class VoronoiGraph {
     }
     //
     //
-    public int OCEAN = 0x44447aff;
+    public static int OCEAN = 0x44447aff;
     public int COAST = 0x33335aff;
     public int LAKESHORE = 0x225588ff;
     public int LAKE = 0x336699ff;

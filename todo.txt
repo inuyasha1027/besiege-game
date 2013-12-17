@@ -41,37 +41,41 @@ Day 38: worked on Siege and expanded player-Location interactions
 Day 39: added army autorepairing, worked on Noble
 Day 40: worked on Noble
 Day 41: added Perlin functionality to Hoten's/Amit's procedural map generation
-Day 42: modified Army's target-based navigation to support Paths with multiple 'nodes'
+Day 42: modified Army's target-based navigation to support Paths with multiple nodes
 Day 43: added randomly generated map to game
 Day 44: worked more on A* pathfinding
 Day 45: still working on Pathfinding
 Day 46: finally got basic unoptimized A* pathfinding to work with some bugs
-Day 47: improved A* pathfinding, optimized visibility graph to 1/4 previous size (now 1/10)
-Day 48: worked on running and coordinating pathfinding with army, reduced freezing
-Day 49:
+Day 47: improved A* pathfinding, optimized visibility graph 10 times faster
+Day 48: worked on running, reduced freezing, removed islands from map 
+Day 49: removed more freezing, improved graph search, cleaned map edges, 
+Day 50: began profiling for bottlenecks, optimized closestHostileArmy()
+Day 51: added spheres of influence, 
 
 
 now:
-figure out why getting stuck at some corners--path or army?
-add partyCAp for nobles and player
+fix glitch causing patrols to freak the fuck out when "returning to their home city" - probably after battles or when it doesn't know what to do?
+optimize farmer shit
+make no armies able to enter or spawn in  - maybe done
+
+make sure armies are ejecting themselves from cities after garrisoning (repair)
+
+add partyCap for nobles and player
 add castles
 
 later:
 change "back" button to use a stack
-make party speed affect retreat and regroup speed
-implement army repairing based on wealth
-add population?
+implement army repairing based on wealth (hard)
+add populations
 add resting - in cities and outside - for player and others.
 think about natural occurances that can benefit or hurt you
  - forests, deserts, mountains, lakes, rivers, farmland etc
 work on map!
 smooth out camera centering
-add nighttime, a big blanket of darkness
-asthetics, consolidate party into one
+consolidate battlePanel display using partyPanel's
 fix inefficiencies
-implement "honor" and baronage?
+implement "honor" and baronage for player
 add minimap
-add sphere of influence on minimap
 
 
 final map goals: 
@@ -79,17 +83,19 @@ final map goals:
 25 castles
 10 factions (6 large, 4 small) and bandits
 areas bandits spawn, bandit camps kinda like villages?
-
+sphere of influence
 
 inefficiencies:
 army detect nearby
 party check upgrade
 
 
+
+
 MAP info: one big polygon! run a basic line of sight algorithm on it to create visibility graph, then simply do a* to do pathfinding. 
 http://www.david-gouveia.com/pathfinding-on-a-2d-polygonal-map/
-Level/Tier:
 
+Level/Tier info:
 Tr  Lvl atk def spd
 0   1   1   1   1   Farmer
 1   3   1   1   2   Vet. Farmer
