@@ -19,6 +19,7 @@ Besiege's AI is fully-automated, meaning if left alone without player participat
 Rival factions will develop, kingdoms will fall and new ones will arise to take their place.
 
 =======
+<pre>
 Progress:
 
 Day 1: background map + camera
@@ -124,7 +125,7 @@ Tr  Lvl atk def spd
 7   18  3   4   3   Tier 7 (vet. pikeman)
 8   22  4   4   3   Tier 8 (pikemaster)
 9   25  4   4   4   Tier 9 (vet pikemaster)
- 
+
 World goal: 
 The player inhabits a vast kingdom comprised of many factions of various sizes, each controlling
 their own sets of locations including cities, castles and villages. Each faction is trying to maximize
@@ -205,3 +206,4 @@ use distancefield for fonts
 tuning up later:
     check maxSpritesInBatch (int) field of SpriteBatch after running the program and set max to that number
    
+</pre>
