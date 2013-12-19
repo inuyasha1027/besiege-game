@@ -19,7 +19,6 @@ Besiege's AI is fully-automated, meaning if left alone without player participat
 Rival factions will develop, kingdoms will fall and new ones will arise to take their place.
 
 =======
-<pre>
 Progress:
 
 Day 1: background map + camera
@@ -72,25 +71,23 @@ Day 47: improved A* pathfinding, optimized visibility graph 10 times faster
 Day 48: worked on running, reduced freezing, removed islands from map 
 Day 49: removed more freezing, improved graph search, cleaned map edges
 Day 50: began profiling for bottlenecks, optimized closestHostileArmy()
-Day 51: added spheres of influence, fixed some patrol and farmer bugs
-Day 52: fixed freezing and border glitch issues, consolidated distBetween()
+Day 51: added spheres of influence, fixed some patrol  and farmer bugs
+Day 52: 
 
 
 now:
-fix glitch in battles with army defeated and retreat time = 1
-also figure out why somethings happen twice?
-figure out why armyPlayer is followed to its corner, not its center
-make sure armies are ejecting themselves from cities after garrisoning (autorepair)
+fix glitch causing patrols to freak out when "returning to their home city" - probably after battles or when it doesn't know what to do?
+optimize farmer shit
+make no armies able to enter or spawn in  - maybe done
 
-idea to fix awkward border thing, just check if two corners are in the same faction, then draw a border accordingly
+make sure armies are ejecting themselves from cities after garrisoning (autorepair)
 
 add partyCap for nobles and player
 add castles
 
 later:
-test on android
 change "back" button to use a stack
-implement army repairing based on wealth
+implement army repairing based on wealth (hard)
 add populations
 add resting - in cities and outside - for player and others.
 think about natural occurances that can benefit or hurt you
@@ -192,7 +189,7 @@ Each army has a "target," destination. Move in path towards that destination at 
 If army's destination is another Army or City, and distance to that army is <= .01 or some small number, triggers an interaction.
 How to store all armies? in a bag? or table?
 
-tips:
+    tips: 
 use object pooling for Armies (allows reuse and efficient memory use)
 when drawing background image, disable blending!
 CLEAR SCREEN EACH FRAME
@@ -208,4 +205,3 @@ use distancefield for fonts
 tuning up later:
     check maxSpritesInBatch (int) field of SpriteBatch after running the program and set max to that number
    
-</pre>

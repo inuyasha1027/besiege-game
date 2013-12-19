@@ -19,7 +19,7 @@ import com.badlogic.gdx.math.Vector2;
  * modified by Kyle
  */
 public class Corner {
-	private final float PUSH_DIST = 10; //distance corners will be pushed away from convex corners
+	private final float PUSH_DIST = 15; //distance corners will be pushed away from convex corners
 
 	public ArrayList<Center> touches = new ArrayList(); //good
 	public ArrayList<Corner> adjacent = new ArrayList(); //good
