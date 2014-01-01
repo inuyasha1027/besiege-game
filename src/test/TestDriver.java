@@ -4,11 +4,6 @@
  */
 package test;
 
-import hoten.geom.PointH;
-import hoten.geom.Rectangle;
-import hoten.utils.MyRandom;
-import hoten.voronoi.VoronoiGraph;
-import hoten.voronoi.nodename.as3delaunay.Voronoi;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -16,6 +11,12 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
+
+import kyle.game.besiege.geom.PointH;
+import kyle.game.besiege.geom.Rectangle;
+import kyle.game.besiege.utils.MyRandom;
+import kyle.game.besiege.voronoi.VoronoiGraph;
+import kyle.game.besiege.voronoi.nodename.as3delaunay.Voronoi;
 
 /**
  * TestDriver.java Function Date Jun 14, 2013

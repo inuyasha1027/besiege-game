@@ -74,21 +74,33 @@ Day 49: removed more freezing, improved graph search, cleaned map edges
 Day 50: began profiling for bottlenecks, optimized closestHostileArmy()
 Day 51: added spheres of influence, fixed some patrol and farmer bugs
 Day 52: fixed freezing and border glitch issues, consolidated distBetween()
+Day 53: made village spawns not based on cities, added WebGL (HTML5) functionality
+Day 54: deployed to google app engine besiege-game.appspot.com
+Day 55: drew out army control flow diagram and restructured Army.act()
+Day 56: fixed running bug, fixed farmer bug
+Day 57: fixed Noble and Patrol stuck bug, fixed faction borders
 
 
 now:
-fix glitch in battles with army defeated and retreat time = 1
-also figure out why somethings happen twice?
+fix "travelling to" bug
+fix "in battle" issue for armies that try to enter battles
+make besieging armies able to attack, prevent bandits from besieging!
+
 figure out why armyPlayer is followed to its corner, not its center
 make sure armies are ejecting themselves from cities after garrisoning (autorepair)
-
-idea to fix awkward border thing, just check if two corners are in the same faction, then draw a border accordingly
+fix army following--path doesn't account for borders when chasing--should follow same path as party.
 
 add partyCap for nobles and player
 add castles
 
 later:
+fix glitch in battles with army defeated and retreat time = 1
+also figure out why some things happen twice?
+fix resting
+add cool loading screen 
+
 test on android
+
 change "back" button to use a stack
 implement army repairing based on wealth
 add populations
@@ -101,6 +113,11 @@ fix inefficiencies
 implement "honor" and baronage for player
 add minimap
 
+add rivers (just more impassable edges--and check for in between corners)
+improve asthetics of map (add rough edges and noise/textures, roads, forests, other details)
+map scalable (
+
+
 final map goals: 
 40 cities (or bigger!)
 25 castles
@@ -111,6 +128,9 @@ sphere of influence
 inefficiencies:
 army detect nearby (improved on day 50)
 party check upgrade
+
+adding edge noise: add noise to each Voronoi edge before drawing, making sure still hits endpoints and crosses Delaunay edge. Use Amit's recursive function in NoisyEdges.as
+
 
 MAP info: one big polygon! run a basic line of sight algorithm on it to create visibility graph, then simply do a* to do pathfinding. 
 http://www.david-gouveia.com/pathfinding-on-a-2d-polygonal-map/
