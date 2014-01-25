@@ -228,4 +228,11 @@ use distancefield for fonts
 tuning up later:
     check maxSpritesInBatch (int) field of SpriteBatch after running the program and set max to that number
    
+ideas:
+    make battles 2d fights with rpg maker style characters
+        more details: require separate engine, allow player to control units like rts, lay out on grid formation. cool idea
+    make visits to cities 2d rpg maker style
+    make a plot where you play as both the good guy and the bad king he's trying to defeat (through flashbacks to his rise to power) - focus on the moral dilemmas and parallelisms?
+   
+   
 </pre>
