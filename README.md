@@ -79,44 +79,41 @@ Day 54: deployed to google app engine besiege-game.appspot.com
 Day 55: drew out army control flow diagram and restructured Army.act()
 Day 56: fixed running bug, fixed farmer bug
 Day 57: fixed Noble and Patrol stuck bug, fixed faction borders
+Day 58: fixed Merchant bug, added main menu, uploaded to princeton.edu
+Day 59:
 
-
-now:
-fix "travelling to" bug
-fix "in battle" issue for armies that try to enter battles
-make besieging armies able to attack, prevent bandits from besieging!
-
-figure out why armyPlayer is followed to its corner, not its center
-make sure armies are ejecting themselves from cities after garrisoning (autorepair)
-fix army following--path doesn't account for borders when chasing--should follow same path as party.
-
-add partyCap for nobles and player
-add castles
+now (mostly engine issues):
+make besieging armies able to attack (?)
+fix glitch in battles with army defeated and retreat time = 1
+implement army repairing based on wealth (?)
 
 later:
-fix glitch in battles with army defeated and retreat time = 1
-also figure out why some things happen twice?
-fix resting
-add cool loading screen 
 
-test on android
-
-change "back" button to use a stack
-implement army repairing based on wealth
-add populations
+gameplay:
 add resting - in cities and outside - for player and others.
-think about natural occurances that can benefit or hurt you
- - forests, deserts, mountains, lakes, rivers, farmland etc
-smooth out camera centering
-consolidate battlePanel display using partyPanel's
-fix inefficiencies
 implement "honor" and baronage for player
-add minimap
+change "back" button to use a stack
+add populations
+add partyCap for nobles and player
 
+engine:
+also figure out why some things happen twice?
+fix army following--path doesn't account for borders when chasing--should follow same path as party.
+figure out why armyPlayer is followed to its corner, not its center
+
+map improvements:
+add castles
 add rivers (just more impassable edges--and check for in between corners)
-improve asthetics of map (add rough edges and noise/textures, roads, forests, other details)
-map scalable (
+utilize map areas (farmland = more wealth, mountains make you slow, etc?)
 
+aesthetics:
+add rain/lightning!
+add cool loading screen 
+consolidate battlePanel display using partyPanel's
+smooth out camera centering
+add minimap (use clipping?)
+improve asthetics of map (add rough edges and noise/textures, roads, forests, other details)
+test on android
 
 final map goals: 
 40 cities (or bigger!)
@@ -130,10 +127,7 @@ army detect nearby (improved on day 50)
 party check upgrade
 
 adding edge noise: add noise to each Voronoi edge before drawing, making sure still hits endpoints and crosses Delaunay edge. Use Amit's recursive function in NoisyEdges.as
-
-
-MAP info: one big polygon! run a basic line of sight algorithm on it to create visibility graph, then simply do a* to do pathfinding. 
-http://www.david-gouveia.com/pathfinding-on-a-2d-polygonal-map/
+(can do this either just asthetically or actually break down every line into much smaller lines--probably slower pathfinding, etc but more natural)
 
 Level/Tier info:
 Tr  Lvl atk def spd
@@ -173,6 +167,7 @@ for more expansion or annihilation. You should be able to organize your own merc
 etc.
 
 army types and purposes:
+
     Farmers - created at villages, farm to gather wealth for cities and villages
     (Village Patrol) - patrols around villages when they become wealthy enough
     
@@ -207,23 +202,11 @@ control a party on the map.
 Party screen/window contains info about who is in your party, upgrades, etc.
 Character screen/window contains player info.
 
-Various armies move around the map.
-Each army has a "target," destination. Move in path towards that destination at given speed.
-If army's destination is another Army or City, and distance to that army is <= .01 or some small number, triggers an interaction.
-How to store all armies? in a bag? or table?
-
 tips:
 use object pooling for Armies (allows reuse and efficient memory use)
 when drawing background image, disable blending!
-CLEAR SCREEN EACH FRAME
-use Sprite class for armies. So useful for rotation/stretching.
-use MapRenderer interface for maps?
 or perhaps scene2d makes the most sense for this type of game (actors and stage!)
 ^definitely makes the most sense (actions, draws all together, etc)
-
-later:
-eventually use clipping for minimap!
-use distancefield for fonts
 
 tuning up later:
     check maxSpritesInBatch (int) field of SpriteBatch after running the program and set max to that number
