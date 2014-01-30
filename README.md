@@ -80,12 +80,15 @@ Day 55: drew out army control flow diagram and restructured Army.act()
 Day 56: fixed running bug, fixed farmer bug
 Day 57: fixed Noble and Patrol stuck bug, fixed faction borders
 Day 58: fixed Merchant bug, added main menu, uploaded to princeton.edu
-Day 59:
+Day 59: added targetOf, fixed containing polygons bug
 
 now (mostly engine issues):
 make besieging armies able to attack (?)
 fix glitch in battles with army defeated and retreat time = 1
 implement army repairing based on wealth (?)
+fix glitch where player can't move after winning battle
+allow joining battles
+some armies just get "stuck" - find out why
 
 later:
 
@@ -95,11 +98,14 @@ implement "honor" and baronage for player
 change "back" button to use a stack
 add populations
 add partyCap for nobles and player
+fix " upgrade for flail not found!" (allow veteran upgrade)
+make farmers not spawn immediately!
 
 engine:
 also figure out why some things happen twice?
 fix army following--path doesn't account for borders when chasing--should follow same path as party.
-figure out why armyPlayer is followed to its corner, not its center
+figure out why armyPlayer is followed to its corner, not its center (doesn't happen with unmounted bandits, for some reason...)
+use shape renderer to draw map instead of drawing entire map (large) every time, see if improvements
 
 map improvements:
 add castles
