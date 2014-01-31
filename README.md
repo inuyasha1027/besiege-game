@@ -81,14 +81,16 @@ Day 56: fixed running bug, fixed farmer bug
 Day 57: fixed Noble and Patrol stuck bug, fixed faction borders
 Day 58: fixed Merchant bug, added main menu, uploaded to princeton.edu
 Day 59: added targetOf, fixed containing polygons bug
+Day 60: fixed player offset bug, fixed retreat time = 1 bug,
 
 now (mostly engine issues):
 make besieging armies able to attack (?)
-fix glitch in battles with army defeated and retreat time = 1
 implement army repairing based on wealth (?)
+allow joining battles (?)
+some armies just get "stuck" after battle - find out why (?)
+armies can't garrison in their own towns sometimes
 fix glitch where player can't move after winning battle
-allow joining battles
-some armies just get "stuck" - find out why
+make bandits not seige
 
 later:
 
@@ -104,10 +106,14 @@ make farmers not spawn immediately!
 engine:
 also figure out why some things happen twice?
 fix army following--path doesn't account for borders when chasing--should follow same path as party.
-figure out why armyPlayer is followed to its corner, not its center (doesn't happen with unmounted bandits, for some reason...)
 use shape renderer to draw map instead of drawing entire map (large) every time, see if improvements
 
+optimizations:
+use kd tree for towns, villages, and centers
+improve battle mechanic! (don't just RNG every frame...)
+
 map improvements:
+fix visibility graph with penninsulas
 add castles
 add rivers (just more impassable edges--and check for in between corners)
 utilize map areas (farmland = more wealth, mountains make you slow, etc?)
