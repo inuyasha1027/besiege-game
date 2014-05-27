@@ -22,13 +22,15 @@ public class Siege extends Actor {
 	private boolean empty; // no armies present;
 	private float countdown; // if no armies
 	private Battle battle;
+	public Faction besieging; // faction besieging this city
 	
 	private boolean hasChecked;
 	
-	public Siege(Location location) {
+	public Siege(Location location, Faction besieging) {
 		System.out.println("creating new siege at " + location.getName());
 		this.location = location;
 		armies = new Array<Army>();
+		this.besieging = besieging; 
 		this.duration = 0;
 	}
 	
@@ -107,7 +109,7 @@ public class Siege extends Actor {
 	public void destroy() {
 		System.out.println("destroying siege");
 		for (Army a : armies) {
-			a.endSiege();
+			a.leaveSiege();
 		}
 		location.endSiege();
 		this.remove();

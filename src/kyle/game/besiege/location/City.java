@@ -5,6 +5,7 @@
  ******************************************************************************/
 package kyle.game.besiege.location;
 
+import kyle.game.besiege.Assets;
 import kyle.game.besiege.Faction;
 import kyle.game.besiege.Kingdom;
 import kyle.game.besiege.Map;
@@ -23,34 +24,31 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
 public class City extends Location {
-	private final float SCALE = 10;
-	private final int CITY_UPPER_VALUE = 40;
-	private final float closeCityDistance = 500; // cities within this distance are considered "close" for trading, raiding, etc
-	private final float villageRangeMax = 80;
-	private final float villageRangeMin = 10;
-	private final float villageSeparation = 60;
-	private final double MERCHANT_GAIN = .008;
+	private final static float SCALE = 10;
+	private final static int PATROL_TRAVEL_FACTOR = 3;
+	private static int CITY_UPPER_VALUE = Assets.cityArray.size; // highest number of cities possible
+	private final static float closeCityDistance = 500; // cities within this distance are considered "close" for trading, raiding, etc
+//	private final static float villageRangeMax = 80; // min village dist
+//	private final static float villageRangeMin = 10;
+//	private final static float villageSeparation = 60;
+	private final static double MERCHANT_GAIN = .008; // calculates merchant's wealth which goes to other cities.
 	private final int patrolCost;
 	private final int raiderCost;
 	private final int merchantCost;
-	
-	private Array<City> closestFriendlyCities;
-	private Array<City> closestEnemyCities;
 	
 	private Array<Patrol> patrols;
 	private Array<Merchant> merchants;
 	private boolean[] merchantExists;
 	private Array<RaidingParty> raiders;
 	private boolean[] raiderExists;
-	
-	private Corner corner;
-	private Center center;
+
 //	private Array<Village> villages;
 //	private Array<PointH> villageSpots;
 
 	public City(Kingdom kingdom, String name, int index, Faction faction, float posX,
 			float posY, int wealth) {
 		super(kingdom, name, index, faction, posX, posY, PartyType.CITY_GARR_1.generate());
+		this.type = LocationType.CITY;
 				
 		getParty().wealth = wealth;
 		
@@ -64,8 +62,8 @@ public class City extends Location {
 		raiders = new Array<RaidingParty>();
 		raiderExists = new boolean[CITY_UPPER_VALUE];
 
-		closestFriendlyCities = new Array<City>();
-		closestEnemyCities = new Array<City>();
+//		closestFriendlyCities = new Array<City>();
+//		closestEnemyLocations = new Array<City>();
 //		villages = new Array<Village>();
 		
 		this.merchantCost = PartyType.MERCHANT.maxWealth;
@@ -102,18 +100,19 @@ public class City extends Location {
 				createMerchant(merchantWealth, city);
 			}
 		}
-		// Organize raiding parties
-		int raiderCount = (int) (getParty().wealth/(raiderCost*2));
-		if (getRaiders().size < raiderCount) {
-			if (closestEnemyCities.random() != null) {
-				this.loseWealth(raiderCost);
-				createRaider();
-			}
-		}
+		// do raiders later
+//		// Organize raiding parties
+//		int raiderCount = (int) (getParty().wealth/(raiderCost*2));
+//		if (getRaiders().size < raiderCount) {
+//			if (getCloseEnemyVillage() != null) {
+//				this.loseWealth(raiderCost);
+////				createRaider();
+//			}
+//		}
 	}
 	
 	public void createPatrol() {
-		Patrol patrol = new Patrol(getKingdom(), this);
+		Patrol patrol = new Patrol(getKingdom(), this, PATROL_TRAVEL_FACTOR);
 		patrol.patrolAround(this);
 		getKingdom().addArmy(patrol);
 		getPatrols().add(patrol);
@@ -139,25 +138,25 @@ public class City extends Location {
 	public void removeMerchant(Merchant merchant) {
 		// could make if not -1, but this will stress test
 //		if (merchant.getGoal().getFaction() == merchant.getFaction())
-		if (getClosestFriendlyCities().indexOf(merchant.getGoal(), true) >= 0)
-			merchantExists[getClosestFriendlyCities().indexOf(merchant.getGoal(), true)] = false;
+		if (closestFriendlyCities.indexOf(merchant.getGoal(), true) >= 0)
+			merchantExists[closestFriendlyCities.indexOf(merchant.getGoal(), true)] = false;
 		merchants.removeValue(merchant, true);
 	}
 
-	public void createRaider() {
-		City targetCity = getCloseEnemyCity();
-		RaidingParty raider = new RaidingParty(getKingdom(), "Raider", getFaction(), getCenterX(), getCenterY());
-		raider.raidAround(targetCity);
-		raider.setDefaultTarget(this);
-		getKingdom().addArmy(raider);
-		raiders.add(raider);
-		raiderExists[closestEnemyCities.indexOf(targetCity, true)] = true;
-		setContainerForArmy(raider);
-	}
+//	public void createRaider() {
+//		Village targetVillage = getCloseEnemyVillage();
+//		RaidingParty raider = new RaidingParty(getKingdom(), "Raider", getFaction(), getCenterX(), getCenterY());
+//		raider.raidAround(targetCity);
+//		raider.setDefaultTarget(this);
+//		getKingdom().addArmy(raider);
+//		raiders.add(raider);
+//		raiderExists[closestEnemyLocations.indexOf(targetCity, true)] = true;
+//		setContainerForArmy(raider);
+//	}
 	
 	public void removeRaider(RaidingParty raider) {
-		raiderExists[closestEnemyCities.indexOf(raider.getRaidAround(), true)] = false;
-		raiders.removeValue(raider, true);
+//		raiderExists[closestEnemyLocations.indexOf(raider.getRaidAround(), true)] = false;
+//		raiders.removeValue(raider, true);
 	}
 	
 	@Override
@@ -172,37 +171,38 @@ public class City extends Location {
 		else 					this.nextHire = PartyType.CITY_HIRE_3.generate(); // worst
 	}
 	
-	public void updateClosestCities() {
-		closestFriendlyCities.clear();
-		closestEnemyCities.clear();
-		// updates when a city changes hands
-		for (City that : getKingdom().getCities()) {
-			if (that != this && Kingdom.distBetween(this, that) < closeCityDistance) {
-				if (!Faction.isAtWar(getFaction(), that.getFaction())) {
-					closestFriendlyCities.add(that);
-				}
-				else closestEnemyCities.add(that);
-			}
-		}
-	}
+//	public void updateClosestLocations() {
+//		closestFriendlyCities.clear();
+//		closestEnemyLocations.clear();
+//		// updates when a city changes hands
+//		for (City that : getKingdom().getCities()) {
+//			if (that != this && Kingdom.distBetween(this, that) < closeCityDistance) {
+//				if (!Faction.isAtWar(getFaction(), that.getFaction())) {
+//					closestFriendlyCities.add(that);
+//				}
+//				else closestEnemyLocations.add(that);
+//			}
+//		}
+//	}
 	
-	public City getCloseEnemyCity() {
-		return closestEnemyCities.random();
-	}
-	public Array<City> getClosestHostileCities() {
-		return closestEnemyCities;
-	}
-	public Array<City> getClosestFriendlyCities() {
-		return closestFriendlyCities;
-	}
-	public void changeFaction(Faction f) {
-		BottomPanel.log(f.name + " has taken " + this.getName());
-		this.getFaction().cities.removeValue(this,true);
-		this.setFaction(f);
-		this.getFaction().cities.add(this);
-//		for (Village v : villages) v.setFaction(f);
-		Faction.updateFactionCityInfo();
-	}
+//	public City getCloseEnemyLocation() {
+//		return closestEnemyLocations.random();
+//	}
+//	public Array<City> getClosestHostileLocations() {
+//		return closestEnemyLocations;
+//	}
+//	public Array<City> getClosestFriendlyCities() {
+//		return closestFriendlyCities;
+//	}
+	// moved to locations
+//	public void changeFaction(Faction f) {
+//		BottomPanel.log(f.name + " has taken " + this.getName());
+//		this.getFaction().cities.removeValue(this,true);
+//		this.setFaction(f);
+//		this.getFaction().cities.add(this);
+////		for (Village v : villages) v.setFaction(f);
+//		Faction.updateFactionCityInfo();
+//	}
 		
 //	public void createVillages() {
 //		int maxVillages = 3; // randomize?

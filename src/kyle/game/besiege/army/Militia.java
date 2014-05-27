@@ -24,6 +24,7 @@ public class Militia extends Army { // Revamp this :)
 	@Override
 	public void act(float delta) {
 		if (!isInBattle()) {
+			// return all wealth to village
 			village.getParty().wealth = village.getParty().wealth + this.getParty().wealth;
 			this.destroy();
 		}

@@ -13,6 +13,8 @@ import kyle.game.besiege.Kingdom;
 import kyle.game.besiege.Point;
 import kyle.game.besiege.Siege;
 import kyle.game.besiege.army.Army;
+import kyle.game.besiege.army.Farmer;
+import kyle.game.besiege.panels.BottomPanel;
 import kyle.game.besiege.party.Party;
 import kyle.game.besiege.party.PartyType;
 import kyle.game.besiege.party.Soldier;
@@ -30,7 +32,22 @@ public class Location extends Actor implements Destination {
 	private final int offset = 30;
 	private final int HIRE_REFRESH = 120; // seconds it takes for soldiers to refresh in city
 	// TODO ^ change this to a variable. later make city wealth affect quality of soldiers.
+	private final int CLOSE_LOC_DISTANCE = 1000; // distance away locations are considered "close"
 	private TextureRegion region;
+	public enum LocationType {CITY, CASTLE, VILLAGE};
+	public LocationType type;
+
+//	protected Array<Location> closestFriendlyLocations;
+//	protected Array<Location> closestEnemyLocations;
+	
+	protected Array<City> closestFriendlyCities;
+	protected Array<Castle> closestFriendlyCastles;
+	protected Array<Village> closestFriendlyVillages;
+	
+	public Array<City> closestEnemyCities;
+	public Array<Castle> closestEnemyCastles;
+	public Array<Village> closestEnemyVillages;
+	
 	private boolean mouseOver;
 	
 	private Kingdom kingdom;
@@ -81,6 +98,17 @@ public class Location extends Actor implements Destination {
 		autoManage = true;
 		playerIn = false;
 		hostilePlayerTouched = false;
+		
+//		closestFriendlyLocations = new Array<Location>();
+//		closestEnemyLocations = new Array<Location>();
+		
+		closestEnemyCities = new Array<City>(); 
+		closestEnemyCastles = new Array<Castle>();
+		closestEnemyVillages = new Array<Village>();
+		
+		closestFriendlyCities = new Array<City>(); 
+		closestFriendlyCastles = new Array<Castle>();
+		closestFriendlyVillages = new Array<Village>();
 		
 		timeSinceFreshHire = 0;
 		nextHire = new Party(); //empty
@@ -168,6 +196,122 @@ public class Location extends Actor implements Destination {
 //			Kingdom.arial.draw(batch, army.getName() + ": " + army.getTroopCount(), getX(), getY() + offset);
 //		}	
 //	}
+
+	/** initializes closeLocation arrays with close locations
+	 */
+	public void findCloseLocations() {
+		closestEnemyCities.clear();
+		closestEnemyCastles.clear();
+		closestEnemyVillages.clear();
+		
+		for (City that : getKingdom().getCities()) {
+			if (that != this && Kingdom.distBetween(this, that) < CLOSE_LOC_DISTANCE) {
+				if (!Faction.isAtWar(getFaction(), that.getFaction())) 
+					closestFriendlyCities.add(that);
+				else closestEnemyCities.add(that);
+			}
+		}
+		for (Castle castle : getKingdom().castles) {
+			if (castle != this && Kingdom.distBetween(this, castle) < CLOSE_LOC_DISTANCE) {
+				if (!Faction.isAtWar(getFaction(), castle.getFaction())) 
+					closestFriendlyCastles.add(castle);
+				else closestEnemyCastles.add(castle);
+			}
+		}
+		// when is village faction info initialized?
+//		for (Village village : getKingdom().villages) {
+//			if (village != this && Kingdom.distBetween(this, village) < CLOSE_LOC_DISTANCE) {
+//				if (!Faction.isAtWar(getFaction(), village.getFaction()))
+//					closestFriendlyVillages.add(village);
+//				else closestEnemyVillages.add(village);
+//			}
+//		}
+	}
+	
+	/** Update closeLocation arrays (doesn't look for new cities)
+	 * 
+	 */
+	public void updateCloseLocations() {
+		Array<City> newCloseEnemyCities = new Array<City>();
+		Array<City> newCloseFriendlyCities = new Array<City>();
+		
+		// cities
+		for (City c : closestEnemyCities) {
+			if (Faction.isAtWar(this.getFaction(), c.getFaction())) {
+				if (!newCloseEnemyCities.contains(c, true))
+					newCloseEnemyCities.add(c);
+			}
+			else if (!newCloseFriendlyCities.contains(c, true))
+				newCloseFriendlyCities.add(c);
+		}
+		for (City c : closestFriendlyCities) {
+			if (Faction.isAtWar(this.getFaction(), c.getFaction())) {
+				if (!newCloseEnemyCities.contains(c, true))
+					newCloseEnemyCities.add(c);
+			}
+			else if (!newCloseFriendlyCities.contains(c, true))
+				newCloseFriendlyCities.add(c);
+		}
+		closestEnemyCities = new Array<City>(newCloseEnemyCities);
+		closestFriendlyCities = new Array<City>(newCloseFriendlyCities);
+		
+		Array<Castle> newCloseEnemyCastles = new Array<Castle>();
+		Array<Castle> newCloseFriendlyCastles = new Array<Castle>();
+		
+		// castles
+		for (Castle c : closestEnemyCastles) {
+			if (Faction.isAtWar(this.getFaction(), c.getFaction())) {
+				if (!newCloseEnemyCastles.contains(c, true))
+					newCloseEnemyCastles.add(c);
+			}
+			else if (!newCloseFriendlyCastles.contains(c, true))
+				newCloseFriendlyCastles.add(c);
+		}
+		for (Castle c : closestFriendlyCastles) {
+			if (Faction.isAtWar(this.getFaction(), c.getFaction())) {
+				if (!newCloseEnemyCastles.contains(c, true))
+					newCloseEnemyCastles.add(c);
+			}
+			else if (!newCloseFriendlyCastles.contains(c, true))
+				newCloseFriendlyCastles.add(c);
+		}
+		closestEnemyCastles = new Array<Castle>(newCloseEnemyCastles);
+		closestFriendlyCastles = new Array<Castle>(newCloseFriendlyCastles);
+
+		Array<Village> newCloseEnemyVillages = new Array<Village>();
+		Array<Village> newCloseFriendlyVillages = new Array<Village>();
+		
+		// villages
+		for (Village v : closestEnemyVillages) {
+			if (Faction.isAtWar(this.getFaction(), v.getFaction())) {
+				if (!newCloseEnemyVillages.contains(v, true))
+					newCloseEnemyVillages.add(v);
+			}
+			else if (!newCloseFriendlyVillages.contains(v, true))
+				newCloseFriendlyVillages.add(v);
+		}
+		for (Village v : closestFriendlyVillages) {
+			if (Faction.isAtWar(this.getFaction(), v.getFaction())) {
+				if (!newCloseEnemyVillages.contains(v, true))
+					newCloseEnemyVillages.add(v);
+			}
+			else if (!newCloseFriendlyVillages.contains(v, true))
+				newCloseFriendlyVillages.add(v);
+		}
+		closestEnemyVillages = new Array<Village>(newCloseEnemyVillages);
+		closestFriendlyVillages = new Array<Village>(newCloseFriendlyVillages);
+
+	}
+	public Location getCloseEnemyCity() {
+		return closestEnemyCities.random();
+	}
+	public Location getCloseEnemyCastles() {
+		return closestEnemyCastles.random();
+	}
+	public Location getCloseEnemyVillage() {
+		return closestEnemyVillages.random();
+	}
+	
 	public void siegeAttack(Array<Army> attackers) {
 //		Army garrisonArmy = new Army(getKingdom(), this.getName() + " Garrison", getFaction(), getCenterX(), getCenterY(), null);
 //		garrisonArmy.setParty(garrison);
@@ -187,7 +331,7 @@ public class Location extends Actor implements Destination {
 		}
 	}
 	public void beginSiege(Army army) {
-		siege = new Siege(this);
+		siege = new Siege(this, army.getFaction());
 		siege.add(army);
 		kingdom.addActor(siege);
 	}
@@ -275,14 +419,31 @@ public class Location extends Actor implements Destination {
 	public Faction getFaction() {
 		return faction;
 	}
-	public void setFaction(Faction faction) {
+	private void setFaction(Faction faction) {
 		this.faction = faction;
 	}
-	public void changeFaction(Faction faction) {
+	public void changeFaction(Faction newFaction) {
 		// TODO updateMerchants();
 		// TODO update villagers();
-		setFaction(faction); 
-		Faction.updateFactionCityInfo();
+		if (this.type == LocationType.CITY) {
+			this.faction.cities.removeValue((City) this, true);
+			newFaction.cities.add((City) this);
+			BottomPanel.log(newFaction.name + " has taken " + this.getName() + " from " + this.getFactionName());
+		}
+		else if (this.type == LocationType.CASTLE) {
+			this.faction.castles.removeValue((Castle) this, true);
+			newFaction.castles.add((Castle) this);
+			BottomPanel.log(newFaction.name + " has taken " + this.getName() + " from " + this.getFactionName());
+		}
+		else if (this.type == LocationType.VILLAGE) {
+			for (Farmer f : ((Village) this).farmers) {
+				
+			}
+		}
+		this.faction = newFaction;
+		// update friendly arrays, and everything (if this isn't a village)
+		if (this.type != LocationType.VILLAGE) 
+			Faction.updateFactionCityInfo();
 	}
 	@Override 
 	public int getType() {

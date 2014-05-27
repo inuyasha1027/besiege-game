@@ -303,6 +303,7 @@ public class PanelBattle extends Panel { // TODO organize soldier display to con
 		this.setButton(1, "Retreat!");
 	}
 	
+	// TODO this is extremely memory inefficient. like, it's really bad.
 	@Override
 	public void act(float delta) {
 //		System.out.println("acting " + delta + " is over: " + battle.isOver);
@@ -332,8 +333,20 @@ public class PanelBattle extends Panel { // TODO organize soldier display to con
 			balance.add(green).width((float) (totalWidth*battle.balanceD));
 		}
 		else {
-			updateTopTable();
-			updateSoldierTable();
+			boolean shouldUpdate = false;
+			for (Army army : battle.aArmies)
+				if (army.getParty().updated) shouldUpdate = true;
+			for (Army army : battle.dArmies)
+				if (army.getParty().updated) shouldUpdate = true;
+			for (Army army : battle.aArmiesRet)
+				if (army.getParty().updated) shouldUpdate = true;
+			for (Army army : battle.dArmiesRet)
+				if (army.getParty().updated) shouldUpdate = true;
+			if (shouldUpdate) {
+				System.out.println("updated soldier table");
+				updateTopTable();
+				updateSoldierTable();
+			}
 		}
 		super.act(delta);
 	}

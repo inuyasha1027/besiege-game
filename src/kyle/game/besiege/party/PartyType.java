@@ -11,8 +11,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.math.MathUtils;
 
 
-public enum PartyType { // TODO add money range!
-	
+public enum PartyType { // todo add ability for max party size
+	// troop types, troop min counts, troop max counts, minWealth, maxWealth
 	FARMER(new Weapon[]{PITCHFORK, MILITARY_FORK}, new int[]{2, 1}, new int[]{5, 2}, 5, 10),
 	PATROL(new Weapon[]{MILITARY_FORK, SPEAR, HATCHET, CLUB, CAVALRY_SPEAR, CAVALRY_AXE}, new int[]{0, 3, 3, 0, 0, 0}, new int[]{3, 6, 5, 3, 2, 2}, 25, 35),
 	MERCHANT(new Weapon[]{CAVALRY_SPEAR, CAVALRY_AXE, CAVALRY_PICK}, new int[]{5, 3, 3}, new int[]{6, 4, 4}, 35, 55),
@@ -23,6 +23,13 @@ public enum PartyType { // TODO add money range!
 	
 	NOBLE_TEST(new Weapon[]{HATCHET}, new int[]{40}, new int[]{60}, 25, 25),
 	
+	// min 40, max 82
+	NOBLE_DEFAULT_1(new Weapon[]{PIKE, HALBERD, LONGSWORD, LANCE, ARMING_SWORD, CAVALRY_SPEAR, CAVALRY_AXE, CAVALRY_PICK, MACE, SHORTSWORD}, 
+			new int[]{5, 5, 5, 4, 4, 5, 5, 5, 5, 5}, new int[] {8, 8, 8, 5, 5, 8, 8, 8, 12, 12}, 0, 0), // best
+			// min 40, max 82
+//	NOBLE_DEFAULT_2(new Weapon[]{PIKE, HALBERD, LONGSWORD, LANCE, ARMING_SWORD, CAVALRY_SPEAR, CAVALRY_AXE, CAVALRY_PICK, MACE, SHORTSWORD}, 
+//			new int[]{5, 5, 5, 4, 4, 5, 5, 5, 5, 5}, new int[] {8, 8, 8, 5, 5, 8, 8, 8, 12, 12}, 0, 0),
+
 	CITY_HIRE_1(new Weapon[]{PIKE, HALBERD, LONGSWORD, LANCE, ARMING_SWORD}, new int[]{0, 0, 0, 0, 0}, new int[] {2, 2, 2, 1, 1}, 0, 0), // best
 	CITY_HIRE_2(new Weapon[]{CAVALRY_SPEAR, CAVALRY_AXE, CAVALRY_PICK, MACE, SHORTSWORD}, new int[]{0, 0, 0, 0, 0}, new int[] {2, 2, 2, 2, 2}, 0, 0),
 	CITY_HIRE_3(new Weapon[]{MILITARY_FORK, SPEAR, HATCHET, CLUB}, new int[]{0, 0, 0, 0}, new int[] {2, 3, 3, 3}, 0, 0), // worst
@@ -33,10 +40,8 @@ public enum PartyType { // TODO add money range!
 	
 	CITY_GARR_1(new Weapon[]{SPEAR, PIKE, HALBERD, LONGSWORD}, new int[]{10, 10, 10, 10}, new int[]{20, 20, 20, 20}, 0, 0),
 	
-	
 	HUGE(new Weapon[]{MACE}, new int[]{100}, new int[]{100}, 0, 0);
 //	VILLAGE_HIRE_1(new Weapon[]{}, new int[]{}, new int[]{}, 0, 0);
-
 
 	private final Weapon[] troopTypes;
 	private final int[] minCount;
@@ -54,6 +59,8 @@ public enum PartyType { // TODO add money range!
 		this.minWealth = minWealth;
 		this.maxWealth = maxWealth;
 	}
+	
+	
 	public Party generate() {
 		Party party = new Party();
 		for (int i = 0; i < troopTypes.length; i++) {
@@ -65,6 +72,19 @@ public enum PartyType { // TODO add money range!
 		party.wealth = randomWealth;
 		return party;
 	}
+	
+	
+	
+//	// create minimal party to test if soldier is clogging memory
+//	public Party generate() {
+//		Party party = new Party();
+//		party.addSoldier(new Soldier(Weapon.BATTLE_AXE, party));
+//		int randomWealth = MathUtils.random(minWealth, maxWealth);
+//		party.wealth = randomWealth;
+//		return party;
+//	}
+	
+	
 	public int getMinSize() {
 		int total = 0;
 		for (int count : minCount) total += count;

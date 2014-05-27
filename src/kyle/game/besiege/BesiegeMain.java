@@ -12,14 +12,12 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 	
 public class BesiegeMain extends Game {
-	public static int WIDTH = 1920;
-	public static int HEIGHT = 1080;
+	public static int WIDTH = 400;
+	public static int HEIGHT = 512;
 	public static int appType; // 0: desktop, 1: android, 2: Html5, 3: iOS
 	public MapScreen mapScreen;
 	public MainMenuScreen mainMenuScreen;
-	
-//	private MapTest mapTest;
-	
+		
 	@Override
 	public void create() {
 		Texture.setEnforcePotImages(false);
@@ -30,9 +28,8 @@ public class BesiegeMain extends Game {
 		
 //		mapTest = new MapTest();
 		
-//		setScreen(mapScreen); // eventually make mainMenu
-		setScreen(mainMenuScreen);
-		
+		setScreen(mapScreen); // eventually make mainMenu
+//		setScreen(mainMenuScreen);
 		
 		// doesn't work!
 		switch (Gdx.app.getType()) {

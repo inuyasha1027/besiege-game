@@ -257,6 +257,7 @@ public class PanelParty extends Panel { // TODO organize soldier display to cons
 		}		
 		playerTouched = false;
 		
+		updateSoldierTable();
 		
 		if (!this.party.player) this.setButton(4, "Back");
 	}
@@ -298,17 +299,31 @@ public class PanelParty extends Panel { // TODO organize soldier display to cons
 		atk.setText(""+ party.getAtk());
 		def.setText(Panel.format(""+party.getAvgDef(), 2));
 		spd.setText(Panel.format(""+party.getAvgSpd(), 2));
-		updateSoldierTable();
+		
+		// don't call this every frame.
+		if (party.updated) {
+			updateSoldierTable();
+			if (!army.isInBattle())
+				party.updated = false;
+		}
+		
+		// minor leak is not here?
 		super.act(delta);
 	}
 	
+	// DO NOT CALL THIS EVERY FRAME - TODO Fix for other panels
+	// I am a god.
 	public void updateSoldierTable() {
 		soldierTable.clear(); // clearing the table is a problem right now. it hides the scroll bar and prevents click-drag scrolling
 		soldierTable.padLeft(MINI_PAD).padRight(MINI_PAD);
 		soldierTable.row();
+		// This method is very leaky. Should only call when update to party occurs necessary.
 		updateTableWithTypes(soldierTable, party.getConsolHealthy(), ls);
 		updateTableWithTypes(soldierTable, party.getConsolWounded(), lsG);
 		Label prisonersC;
+		
+		// LEAK IS ABOVE
+		
 		if (party.getPrisoners().size > 0)
 			prisonersC = new Label("Captured", ls);
 		else prisonersC = new Label("",ls);
@@ -317,6 +332,8 @@ public class PanelParty extends Panel { // TODO organize soldier display to cons
 		soldierTable.row();
 		updateTableWithTypes(soldierTable, party.getConsolPrisoners(), lsG);
 	}
+	
+	// this method is evil don't call this frequently
 	public static void updateTableWithTypes(Table table, Array<Array<Soldier>> types, LabelStyle style) {
 		for (Array<Soldier> type : types) {
 			Label name = new Label(type.first().name, style);
@@ -326,6 +343,7 @@ public class PanelParty extends Panel { // TODO organize soldier display to cons
 			table.row();
 		}
 	}
+	
 	public static void updateTableWithSoldiers(Table table, Array<Soldier> soldiers, LabelStyle style) {
 		for (Soldier s : soldiers) {
 			SoldierLabel name = new SoldierLabel(s.name, style, s);

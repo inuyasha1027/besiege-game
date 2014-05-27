@@ -8,6 +8,7 @@ package kyle.game.besiege.location;
 
 import kyle.game.besiege.Faction;
 import kyle.game.besiege.Kingdom;
+import kyle.game.besiege.army.Army.ArmyType;
 import kyle.game.besiege.army.Farmer;
 import kyle.game.besiege.army.Militia;
 import kyle.game.besiege.party.Party;
@@ -26,11 +27,12 @@ public class Village extends Location {
 //	private City parent;
 	private int population = 1000;
 	
-	private Array<Farmer> farmers;
+	public Array<Farmer> farmers;
 
 	public Village(Kingdom kingdom, String name, int index, Faction faction,
 			float posX, float posY, int wealth) {
 		super(kingdom, name, index, faction, posX, posY, new Party());
+		this.type = LocationType.VILLAGE;
 		getParty().wealth = wealth;
 		
 		setTextureRegion(textureRegion);
@@ -50,7 +52,7 @@ public class Village extends Location {
 	}
 
 	public void createFarmer() {
-		Farmer farmer = new Farmer(getKingdom(), "Farmers", getFaction(), getCenterX(), getCenterY());
+		Farmer farmer = new Farmer(getKingdom(), getName() + " Farmers", getFaction(), getCenterX(), getCenterY());
 		farmer.setVillage(this);
 		getKingdom().addArmy(farmer);
 		farmers.add(farmer);
@@ -69,11 +71,13 @@ public class Village extends Location {
 	}
 	
 	public Militia createMilitia() {
-		int militiaCount = 10;
-		int militiaWealth = getParty().wealth / 2;
-		getParty().wealth = getParty().wealth/2;
 		Militia militia = new Militia(getKingdom(), getName() + " Militia", getFaction(), getCenterX(), getCenterY());
 		militia.setVillage(this);
+		// transfer all wealth to militia
+		militia.getParty().wealth = this.getParty().wealth;
+		// also decrease village wealth temporarily.
+		this.getParty().wealth = 0;
+		militia.type = ArmyType.MILITIA;
 		return militia;
 	}
 	

@@ -221,7 +221,7 @@ public class Battle extends Actor implements Destination { // new battle system 
 		army.endBattle();
 		army.setStopped(false);
 //		if (army.type == ArmyType.PATROL) 
-		army.setVisible(true);
+		if (!army.isGarrisoned()) army.setVisible(true);
 		
 		if (army == kingdom.getPlayer()) {
 			playerInA = false;
@@ -373,8 +373,10 @@ public class Battle extends Actor implements Destination { // new battle system 
 			//System.out.println("defense roll of defender : " + defenseRoll);
 			if (aAtk*aAdvantage > defenseRoll)
 				killOne(defense, false);
-			if (!defense.getParty().player && balanceD < RETREAT_THRESHOLD)
-				retreat(defense);
+			if (!defense.getParty().player && balanceD < RETREAT_THRESHOLD) {
+				if (defense.type != ArmyType.MILITIA)
+					retreat(defense);
+			}
 		}
 	}
 	public void defenseStep() {	
@@ -383,8 +385,10 @@ public class Battle extends Actor implements Destination { // new battle system 
 			//System.out.println("defense roll of attacker : " + defenseRoll);
 			if (dAtk*dAdvantage > defenseRoll)
 				killOne(defense, true);
-			if (!defense.getParty().player && balanceA < RETREAT_THRESHOLD)
-				retreat(defense);
+			if (!defense.getParty().player && balanceA < RETREAT_THRESHOLD) {
+				if (defense.type != ArmyType.MILITIA)
+					retreat(defense);
+			}
 		}
 	}
 	
@@ -460,7 +464,7 @@ public class Battle extends Actor implements Destination { // new battle system 
 
 		// change faction of city if siege
 		if (didAtkWin && siegeOf != null) {
-			siegeOf.changeFaction(aArmies.first().getFaction());
+			siegeOf.changeFaction(siegeOf.getSiege().besieging);
 		}
 		if (!didAtkWin && siegeOf != null) {
 			if (siegeOf.getSiege() != null) {
@@ -482,8 +486,11 @@ public class Battle extends Actor implements Destination { // new battle system 
 			}
 		
 			//	log(army.getName() + " has won a battle", "cyan");
-			army.setVisible(true);
+			if (!army.isGarrisoned()) army.setVisible(true);
 			army.nextTarget(); // 
+			
+			if (army.getParty().player) army.setTarget(null);
+			
 			
 			victorContribution[i] = army.getParty().getAtk(); // for now just do atk.
 			totalContribution += victorContribution[i];

@@ -5,6 +5,7 @@
  ******************************************************************************/
 package kyle.game.besiege.army;
 
+import kyle.game.besiege.Faction;
 import kyle.game.besiege.Kingdom;
 import kyle.game.besiege.location.City;
 import kyle.game.besiege.location.Location;
@@ -31,7 +32,7 @@ public class Noble extends Army {
 	//	private int level;
 
 	public Noble(Kingdom kingdom, Location home) {
-		super(kingdom, "", home.getFaction(), home.getCenterX(), home.getCenterY(), PartyType.NOBLE_TEST);
+		super(kingdom, "", home.getFaction(), home.getCenterX(), home.getCenterY(), PartyType.NOBLE_DEFAULT_1);
 		this.home = home;
 		this.setDefaultTarget((City) home);
 		// set up initial party, rank, etc
@@ -59,13 +60,18 @@ public class Noble extends Army {
 		// nobles do: 
 		// travel between their own cities (by default)
 		// or are sent to besiege other cities (by faction)
-		if (this.hasSpecialTarget()) {
+		if (this.hasSpecialTarget() && !this.isGarrisonedIn(specialTarget)) {
 			//			System.out.println(getName() + " managing special target " + this.specialTarget.getName());
 			// go to city to besiege/raid
+			if (this.isGarrisoned()) this.eject();
 			manageSpecialTarget();
 		}
-		else {
+		else if (getFaction().cities.size > 1) {
 			wanderBetweenCities();
+		}
+		else {
+			System.out.println(getName() + " only one city");
+			// wait in city
 		}
 	}
 
@@ -79,19 +85,23 @@ public class Noble extends Army {
 		return MathUtils.random(0, WAIT);
 	}
 
+	// some problem where noble detects path to new target (friendly city), but still travels to enemy city (perhaps old special target)
 	public void manageSpecialTarget() {
 		if (this.path.isEmpty()) {
-			if (specialTarget != null) {
+			if (specialTarget != null && this.getTarget() != specialTarget) {
 				setTarget(specialTarget);
-//				System.out.println(getName() + " setting special target " + specialTarget.getName());
+				System.out.println(getName() + " setting special target " + specialTarget.getName());
 				path.travel();
 			}
 			else {
-//				System.out.println(getName() + " special target is null");
+				System.out.println(getName() + " special target is null");
 				path.travel();
 			}
 		}
-		else path.travel();
+		else {
+//			System.out.println(getName() + " path is not empty");
+//			path.travel();
+		}
 	}
 
 	@Override 
@@ -101,13 +111,20 @@ public class Noble extends Army {
 	}
 
 	public void wanderBetweenCities() {
+		// I think this is the problem
 		if (this.path.isEmpty()) {
 			goToNewTarget();
 			toggleWait = true;
 			//			System.out.println("doesn't have target and is waiting? " + this.isWaiting() + " and is garrisoned? " + isGarrisoned());
 			//				System.out.println("starting to wait");
 
-			//				System.out.println("getting new target");
+			System.out.println(this.getName() + "getting new target");
+		}
+		// make sure not going to enemy city - weird glitch
+		else {
+//			System.out.println(getName() + " has path");
+			if (this.path.nextGoal != null && this.path.nextGoal.getType() == 1 && Faction.isAtWar(this.path.nextGoal.getFaction(), this.getFaction()))
+				goToNewTarget();
 		}
 	}
 
@@ -117,7 +134,7 @@ public class Noble extends Army {
 			if (newTarget != null)
 				setTarget(newTarget);
 			else {
-//				System.out.println("noble.wanderBetweenCities target");
+//				System.out.println(getName() + " wanderBetweenCities target");
 			}
 		}
 //		else System.out.println("new target is garrisoned in");
@@ -162,8 +179,8 @@ public class Noble extends Army {
 		return specialTarget != null;
 	}
 	@Override 
-	public void endSiege() {
-		super.endSiege();
+	public void leaveSiege() {
+		super.leaveSiege();
 		this.specialTarget = null;
 	}
 }

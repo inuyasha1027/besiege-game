@@ -16,6 +16,7 @@ public class Party {
 	private final double BASE_CHANCE = .5;
 	private final double MIN_WEALTH_FACTOR = 1.4; // times troopcount
 	
+	public boolean updated; // does the panel need to be updated.
 	public int wealth;
 	public int minWealth; // keeps the party out of debt, of course!
 	
@@ -23,6 +24,7 @@ public class Party {
 	private Array<Soldier> healthy;
 	private Array<Soldier> wounded;
 	private Array<Soldier> prisoners;
+	private Array<Soldier> upgradable;
 	
 	private int atkTotal;
 	private int defTotal;
@@ -35,6 +37,7 @@ public class Party {
 		healthy = new Array<Soldier>();
 		wounded = new Array<Soldier>();
 		prisoners = new Array<Soldier>();
+		upgradable = new Array<Soldier>();
 		atkTotal = 0;
 		defTotal = 0;
 		spdTotal = 0;
@@ -63,10 +66,12 @@ public class Party {
 			Soldier soldier = iter.next();
 			if (soldier.isHealed())
 				heal(soldier);
+			updated = true;
 		}
 	}
 	
 	public void addSoldier(Soldier soldier) {
+		updated = true;
 		if (soldier.isWounded()) {
 			wounded.add(soldier);
 			wounded.sort();
@@ -78,6 +83,7 @@ public class Party {
 		calcStats();
 	}
 	public void removeSoldier(Soldier soldier) {
+		updated = true;
 		if (healthy.contains(soldier, true)) {
 			healthy.removeValue(soldier, true);
 		}
@@ -87,6 +93,7 @@ public class Party {
 	}
 
 	public void addPrisoner(Soldier soldier) {
+		updated = true;
 		prisoners.add(soldier);
 		prisoners.sort();
 	}
@@ -118,7 +125,7 @@ public class Party {
 		healthy.sort();
 	}
 	public Array<Soldier> getUpgradable() {
-		Array<Soldier> upgradable = new Array<Soldier>();
+		upgradable.clear();
 		for (Soldier s : healthy) {
 			if (s.canUpgrade)
 				upgradable.add(s);

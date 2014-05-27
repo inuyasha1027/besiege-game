@@ -26,7 +26,7 @@ public class Path {
 	private static final int GOAL_DIST = 5;
 	private Map map;
 	private Army army;
-	private Destination finalGoal;
+	public Destination finalGoal;
 //	private Stack<Destination> dStack; // maybe a queue, whatever will be easier.
 	//public for debugging
 	public Stack<Destination> dStack; // maybe a queue, whatever will be easier.
@@ -61,6 +61,7 @@ public class Path {
 		finalGoal = endDest;
 //		System.out.println(army.getName() + " getting new Path"); not the problem for freezing
 //		if (army.getParty().player) System.out.println("player getting new path");
+		// TODO remove news?
 		dStack.clear();
 		Corner startCorner = new Corner();
 		startCorner.loc = new PointH(army.getCenterX(), Map.HEIGHT-army.getCenterY());
@@ -110,62 +111,65 @@ public class Path {
 		}
 	}
 
-	public Stack<Destination> BFS(Corner start, Corner goal) {
-		ArrayList<Corner> visited = new ArrayList<Corner>(); 	// should only visit each corner once
-		//ArrayList<Corner> notVisited = new ArrayList<Corner>(); // should visit all corners 
-		PriorityQueue<SearchNode> pq = new PriorityQueue<SearchNode>();
+//	public Stack<Destination> BFS(Corner start, Corner goal) {
+//		ArrayList<Corner> visited = new ArrayList<Corner>(); 	// should only visit each corner once
+//		//ArrayList<Corner> notVisited = new ArrayList<Corner>(); // should visit all corners 
+//		PriorityQueue<SearchNode> pq = new PriorityQueue<SearchNode>();
+//
+//		// can iterate if fails
+//		//for (Corner c : map.borderCorners)
+//		//	notVisited.add(c);
+//
+//		SearchNode first = new SearchNode();
+//
+//		first.curr = start;
+//		first.prev = null;
+//		first.H = 0; // hamming/manhattan distance corresponds to H
+//		first.G = 0; // moves corresponds to G, we're trying to minimize G
+//
+//		pq = new PriorityQueue<SearchNode>();
+//		pq.add(first);
+//
+//		SearchNode min; 
+//
+//		while (pq.peek().curr != goal) { // || notVisited.isEmpty()) {
+//			min = pq.remove();
+//		//	notVisited.remove(min.curr);
+//			visited.add(min.curr);
+//
+//			for (Corner corner : min.curr.visibleCorners) {
+//				if (!visited.contains(corner)) {
+//					SearchNode s = new SearchNode();
+//					s.curr = corner;
+//					s.prev = min;
+//					s.G = min.G + heuristicDist(s.curr, min.curr);
+//					s.H = 0; // don't worry about heuristic
+//					pq.add(s);
+//				}
+//			}
+//		}
+//		
+//		//if (notVisited.isEmpty()) {
+//		//	System.out.println("can't get to goal");
+//		//	return null;
+//		//}
+//
+//		min = pq.remove();
+//		double minG = min.G;
+//		System.out.println("dist is " + minG);
+//		
+//		Stack<Destination> path = new Stack<Destination>();
+//		SearchNode tracker = min;
+//		while (tracker != null) {
+//			path.push(cornerToPoint(tracker.curr));
+//			tracker = tracker.prev;
+//		}
+//		return path;
+//	}
 
-		// can iterate if fails
-		//for (Corner c : map.borderCorners)
-		//	notVisited.add(c);
-
-		SearchNode first = new SearchNode();
-
-		first.curr = start;
-		first.prev = null;
-		first.H = 0; // hamming/manhattan distance corresponds to H
-		first.G = 0; // moves corresponds to G, we're trying to minimize G
-
-		pq = new PriorityQueue<SearchNode>();
-		pq.add(first);
-
-		SearchNode min; 
-
-		while (pq.peek().curr != goal) { // || notVisited.isEmpty()) {
-			min = pq.remove();
-		//	notVisited.remove(min.curr);
-			visited.add(min.curr);
-
-			for (Corner corner : min.curr.visibleCorners) {
-				if (!visited.contains(corner)) {
-					SearchNode s = new SearchNode();
-					s.curr = corner;
-					s.prev = min;
-					s.G = min.G + heuristicDist(s.curr, min.curr);
-					s.H = 0; // don't worry about heuristic
-					pq.add(s);
-				}
-			}
-		}
-		
-		//if (notVisited.isEmpty()) {
-		//	System.out.println("can't get to goal");
-		//	return null;
-		//}
-
-		min = pq.remove();
-		double minG = min.G;
-		System.out.println("dist is " + minG);
-		
-		Stack<Destination> path = new Stack<Destination>();
-		SearchNode tracker = min;
-		while (tracker != null) {
-			path.push(cornerToPoint(tracker.curr));
-			tracker = tracker.prev;
-		}
-		return path;
-	}
-
+	
+	// serious lag occurs when army calls this repeatedly.
+	// TODO remove news
 	public Stack<Destination> aStar(Corner start, Corner goal, Destination endDest) {
 		if (army.getParty().player) System.out.println("player in a*");
 
@@ -188,7 +192,9 @@ public class Path {
 		SearchNode min; 
 		
 		int loops = 0;
-
+		
+		System.out.println(army.getName() + " A* started to " + endDest.getName());
+		
 		while (!pq.isEmpty() && pq.peek().curr != goal && loops < 1000) {// && !notVisited.isEmpty()) {
 			min = pq.remove();
 			notVisited.remove(min.curr);
@@ -199,14 +205,15 @@ public class Path {
 			for (Corner corner : min.curr.visibleCorners) {
 				// skip check, may be specific to board problem
 				if (min.prev == null || (corner != min.curr && corner != min.prev.curr)) {
-					SearchNode s = new SearchNode();
-					s.curr = corner;
-					s.prev = min;
-					s.G = min.G + heuristicDist(s.curr, min.curr);
-					s.H = heuristicDist(s.curr, goal);
-					if (!visited.contains(s.curr))
-//						System.out.println("adding new");
+					if (!visited.contains(corner)) {
+						SearchNode s = new SearchNode();
+						s.curr = corner;
+						s.prev = min;
+						s.G = min.G + heuristicDist(s.curr, min.curr);
+						s.H = heuristicDist(s.curr, goal);
+						//						System.out.println("adding new " + loops);
 						pq.add(s);
+					}
 				}
 			}   
 		}
@@ -300,14 +307,24 @@ public class Path {
 	}
 	public void detectPointCollision() {
 //		if (dStack.size() == 0)
-//			System.out.println(army.getName() + " detecting collision");
-		if (Kingdom.distBetween(army, nextGoal) < GOAL_DIST)
+		// probably target is being set to something very close to the army, this is being called, next is called
+		if (Kingdom.distBetween(army, nextGoal) < GOAL_DIST) {
 			next();
+//			System.out.println(army.getName() + " detecting collision, close to " + nextGoal.getName());
+		}
 	}
 	public void next() {
 //		if (army.getParty().player) System.out.println("player's path.next");
 //		if (dStack.isEmpty()) System.out.println("problem");
-		if (dStack.isEmpty()) nextGoal = null;
+		
+		// cleans out shit destinations, maybe fixes bug
+		while (Kingdom.distBetween(army, dStack.peek()) < GOAL_DIST && dStack.size() > 1) {
+//			System.out.println("cleaning!");
+			dStack.pop();
+		}
+		if (dStack.isEmpty()) {
+			nextGoal = null;
+		}
 		else {
 			nextGoal = dStack.pop();
 			travel();

@@ -9,20 +9,24 @@ import kyle.game.besiege.Faction;
 import kyle.game.besiege.Kingdom;
 import kyle.game.besiege.Map;
 import kyle.game.besiege.Point;
+import kyle.game.besiege.location.Castle;
 import kyle.game.besiege.location.City;
+import kyle.game.besiege.location.Location;
 import kyle.game.besiege.panels.Panel;
 import kyle.game.besiege.party.PartyType;
 
 public class Patrol extends Army {
+	private final float PATROL_DIST;
 	private final String textureRegion = "KnightHorse";
-	private City patrolAround;
+	private Location patrolAround;
 
-	public Patrol(Kingdom kingdom, City defaultTarget) {
+	public Patrol(Kingdom kingdom, Location defaultTarget, int travelFactor) {
 		super(kingdom, defaultTarget.getName() + " Patrol", defaultTarget.getFaction(), defaultTarget.getCenterX(), defaultTarget.getCenterY(), PartyType.PATROL);
 		this.setDefaultTarget(defaultTarget);
 		this.patrolAround = null;
 		setTextureRegion(textureRegion);
 		this.type = ArmyType.PATROL;
+		PATROL_DIST = this.getLineOfSight()*travelFactor;
 	}
 	
 	@Override
@@ -45,8 +49,8 @@ public class Patrol extends Army {
 
 			Point newTarget;
 			do {
-				float dx = (float) ((Math.random()*2-1)*getLineOfSight()); //number btw -1 and 1
-				float dy = (float) ((Math.random()*2-1)*getLineOfSight());
+				float dx = (float) ((Math.random()*2-1)*PATROL_DIST); //number btw -1 and 1
+				float dy = (float) ((Math.random()*2-1)*PATROL_DIST);
 				newTarget = new Point(patrolAround.getCenterX() + dx, patrolAround.getCenterY() + dy);
 			} while (getKingdom().getMap().isInWater(newTarget)); 
 			if (!setTarget(newTarget)) System.out.println(" patrol set bad water targe");;
@@ -55,7 +59,7 @@ public class Patrol extends Army {
 //			System.out.println(getName() + " has target so not patrolling");
 	}
 	
-	public void patrolAround(City city) {
+	public void patrolAround(Location city) {
 		patrolAround = city;
 	}
 	public void stopPatrolling() {

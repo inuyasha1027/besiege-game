@@ -57,6 +57,7 @@ public class Merchant extends Army {
 //			setGarrisonedIn(city);
 //		}
 //	}
+	
 	@Override
 	public void wait(float delta) {
 		if (getKingdom().clock() >= getWaitUntil()) {
@@ -85,9 +86,10 @@ public class Merchant extends Army {
 		}
 	}
 	@Override
-	public void nextTarget() {
+	public void uniqueAct() {
 //		System.out.println(getName() + " setting next target");
-		setTarget(goal);
+		if (this.path.isEmpty())
+			setTarget(goal);
 	}
 	public void setGoal(City goal) {
 		this.goal = goal;

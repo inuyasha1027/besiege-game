@@ -12,6 +12,7 @@ import java.util.Scanner;
 import kyle.game.besiege.army.Army;
 import kyle.game.besiege.army.ArmyPlayer;
 import kyle.game.besiege.army.Bandit;
+import kyle.game.besiege.location.Castle;
 import kyle.game.besiege.location.City;
 import kyle.game.besiege.location.Location;
 import kyle.game.besiege.location.Village;
@@ -57,6 +58,7 @@ public class Kingdom extends Group {
 	private MapScreen mapScreen;
 	private Array<Army> armies;
 	public Array<City> cities;
+	public Array<Castle> castles;
 	public Array<Village> villages;
 	private Array<Battle> battles;
 	private ArmyPlayer player;
@@ -91,10 +93,12 @@ public class Kingdom extends Group {
 
 		//		backgroundMap = new BackgroundMap();
 		//		addActor(backgroundMap);
+		// no leak
 		addActor(map);
 
 		armies = new Array<Army>();
 		cities = new Array<City>();
+		castles = new Array<Castle>();
 		villages = new Array<Village>();
 		battles = new Array<Battle>();
 
@@ -105,8 +109,10 @@ public class Kingdom extends Group {
 		// initialize all villages
 		initializeVillages();
 		//initializeCastles();
+		
+		Faction.initializeFactionCityInfo();
 		// initialize all castles
-		Faction.updateFactionCityInfo();
+//		Faction.updateFactionCityInfo();
 
 		//		for (Faction f: factions) {
 		//			System.out.println(f.name + " enemy cities: ");
@@ -119,7 +125,7 @@ public class Kingdom extends Group {
 
 
 		for (int i = 0; i < cities.size; i++)
-			cities.get(i).updateClosestCities();
+			cities.get(i).findCloseLocations();
 
 		// initialize all armies
 
@@ -312,6 +318,7 @@ public class Kingdom extends Group {
 
 		map.draw(batch, parentAlpha);
 
+		// leak is not here
 		super.draw(batch, parentAlpha);
 		arial.setColor(Color.WHITE);
 		arial.setScale(2*(mapScreen.getCamera().zoom));
@@ -327,7 +334,7 @@ public class Kingdom extends Group {
 		//		Scanner scanner = Assets.cityList;
 		int currentFaction = 2; // no bandits or player 
 		int factionRepeats = 0;
-		int maxRepeats = (int) (Math.random()*3) + 0; // max 3, min 0
+		int maxRepeats = (int) (Math.random()*3) + 1; // max 2, min 0
 		//		while (scanner.hasNextLine() && (map.cityCorners.size > 0 && map.cityCenters.size > 0)) {
 		while (cityArray.size > 0 && (map.cityCorners.size > 0 && map.cityCenters.size > 0)) {
 			//			System.out.println("adding city");
@@ -408,7 +415,7 @@ public class Kingdom extends Group {
 			if (factionRepeats > maxRepeats) {
 				currentFaction++;
 				factionRepeats = 0;
-				maxRepeats = (int) (Math.random()*5) + 5;
+				maxRepeats = (int) (Math.random()*3) + 1;
 			}
 		}
 		System.out.println("Number cities: " + cities.size);
@@ -452,13 +459,13 @@ public class Kingdom extends Group {
 		float posX, posY;
 		//		float posX = 2048;
 		//		float posY = 2048;
-		Point p;
+		Point p = new Point(0,0);
 		int count = 0;
 		do {
 			count++;
 			posX = (float) (originCity.getCenterX() + (Math.random()+0.5)*bandit.getLineOfSight());
 			posY = (float) (originCity.getCenterY() + (Math.random()+0.5)*bandit.getLineOfSight());
-			p = new Point(posX, posY); 
+			p.setPos(posX, posY); 
 			//			System.out.println("creating bandit spot");
 		} while ((map.isInWater(p) || Kingdom.distBetween(p, player) <= player.getLineOfSight()) && count < 10); // makes sure bandit is out of sight of player!
 		if (count == 10) return;

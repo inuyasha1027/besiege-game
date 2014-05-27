@@ -36,7 +36,7 @@ public class ArmyPlayer extends Army {
 			int posX, int posY, int troopCount) {
 //		super(kingdom, character.name, Faction.PLAYER_FACTION, posX, posY, PartyType.PATROL);
 //		super(kingdom, character.name, Faction.BANDITS_FACTION, posX, posY, PartyType.RAIDING_PARTY);
-		super(kingdom, character.name, Faction.factions.get(3), posX, posY, PartyType.RAIDING_PARTY);
+		super(kingdom, character.name, Faction.factions.get(3), posX, posY, PartyType.NOBLE_DEFAULT_1);
 
 		this.character = character;
 		this.panel = getKingdom().getMapScreen().getSidePanel();
@@ -55,7 +55,9 @@ public class ArmyPlayer extends Army {
 	}
 
 	@Override
-	public void act(float delta) {		
+	public void act(float delta) {	
+		if (this.lastPathCalc > 0) this.lastPathCalc--;
+
 		if (isStopped() && !isWaiting()) {
 //			System.out.println("is stopped and isn't waiting");
 			setPaused(true);

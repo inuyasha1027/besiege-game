@@ -18,8 +18,12 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.utils.Array;
 
 public class Assets {
+	private static int cityCount = 15;
+	private static int castleCount = 0;
+	private static int villageCount = 20;
 	public static Array<String> cityArray;
 	public static Array<String> villageArray;
+	public static Array<String> castleArray;
 	//	public static Scanner cityList;
 	//	public static Scanner villageList;
 	public static TextureAtlas atlas;
@@ -50,7 +54,6 @@ public class Assets {
 	public static BitmapFont pixel200;
 	public static BitmapFont pixel256;
 
-
 	public static void load() {
 		atlas = new TextureAtlas(Gdx.files.internal("atlas1.atlas"));
 		//		map = new TextureAtlas(Gdx.files.internal("mapAtlas.atlas"));
@@ -62,9 +65,7 @@ public class Assets {
 		//		map2 = new Texture(Gdx.files.internal("map/Map2_1.PNG"));
 		//		map3 = new Texture(Gdx.files.internal("map/Map2_1.PNG"));
 		//		map4 = new Texture(Gdx.files.internal("map/Map2_1.PNG"));
-
-		int size = 20;
-		
+	
 		String[] cities = {
 				"Catterick",
 				"Colne",
@@ -109,11 +110,10 @@ public class Assets {
 		};
 
 		cityArray = new Array<String>();
-		for (int i = 0; i < size; i++) 
+		for (int i = 0; i < cityCount; i++) 
 			cityArray.add(cities[i]);
 
-
-		String[] villages = {
+		String[] castlesVillages = {
 				"Lewes",
 				"Deal",
 				"Bytham",
@@ -184,11 +184,25 @@ public class Assets {
 				"Swansea",
 				"Albans",
 				"Walsingham",
+				"Baldock",
+				"Hutton",
+				"Wigmore",
+				"Worthing",
+				"Carlisle",
+				"Elmham",
+				"Oswestry",
+				"Cricklade",
+				"Evesham",
+				"Harcourt"
 		};
 		villageArray = new Array<String>();
-
-		for (int i = 0; i < size; i++) 
-			villageArray.add(villages[i]);
+		for (int i = 0; i < villageCount; i++) 
+			villageArray.add(castlesVillages[i]);
+		
+		// go backwards in list for castles, starting from bottom
+		castleArray = new Array<String>();
+		for (int i = villageArray.size-1; i >= villageArray.size-1-castleCount; i--)
+			castleArray.add(castlesVillages[i]);
 
 		//		cityList = new Scanner(Gdx.files.internal("mapSmall.txt").readString());
 		//		cityList = new Scanner(Gdx.files.internal("map40.txt").readString());
@@ -221,6 +235,6 @@ public class Assets {
 
 	public static void dispose() {
 		atlas.dispose();
-		map.dispose();
+//		map.dispose();
 	}
 }

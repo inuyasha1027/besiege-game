@@ -106,6 +106,8 @@ public class Panel extends Group {
 		buttons.add(timeLabel).padTop(PAD).padLeft(PAD).expand(false,false).fill(false).width((SidePanel.WIDTH - PAD * 2)/2-PAD);
 		buttons.add(pausedLabel).padTop(PAD).padRight(PAD).expand(false,false).fill(false).width((SidePanel.WIDTH - PAD * 2)/2-PAD);
 		//buttons.debug();
+		
+		// TODO remove
 		this.addActor(buttons);
 		
 		//buttonArray = new Array<Button>();
@@ -186,8 +188,9 @@ public class Panel extends Group {
 			}
 	}
 
+	// LEAK IS NOT HERE
 	@Override
-	public void act(float delta) {		
+	public void act(float delta) {	
 		if (topPane.getHeight() != parentPanel.getHeight() - SidePanel.WIDTH - BUTTONHEIGHT - PAD*2) {
 			resize();
 		}

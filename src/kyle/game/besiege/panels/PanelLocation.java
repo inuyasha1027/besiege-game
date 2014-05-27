@@ -506,7 +506,7 @@ public class PanelLocation extends Panel { // TODO organize soldier display to c
 			location.stopWait();
 		}
 		else if (playerBesieging) {
-			location.getKingdom().getPlayer().endSiege();
+			location.getKingdom().getPlayer().leaveSiege();
 			BottomPanel.log("Withdraw!");
 		}
 		else {

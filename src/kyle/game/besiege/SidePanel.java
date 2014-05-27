@@ -94,6 +94,8 @@ public class SidePanel extends Group {
 		this.setHeight(camera.viewportHeight);
 		this.setPosition(camera.viewportWidth-WIDTH, 0);
 		this.setOrigin(getCamera().position.x - getX(), getCamera().position.y - getY());
+
+		// the second leak is here! it's in one of the children.
 		super.act(delta);
 	}
 	
@@ -139,6 +141,8 @@ public class SidePanel extends Group {
 				this.removeActor(this.activePanel);
 			}
 			this.activePanel = newActivePanel;
+
+			// the leak is here
 			this.addActor(activePanel);
 		}
 	}
@@ -169,6 +173,10 @@ public class SidePanel extends Group {
 	}
 	public void setDefault() {
 		setActive(party); // can change
+		
+		// testing for leaks?
+		// leaks still occur with character!
+//		setActive(character);
 	}
 	public void press(int button) {
 //		if (activePanel.getButton(button).isVisible()) {

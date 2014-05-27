@@ -21,11 +21,10 @@ public enum Weapon {
 	HATCHET (4, "Hatchet", "Axeman", 2, 0, 0, true, false),
 	CLUB (4, "Cudgel", "Clubman", 2, 0, 0, true, true),
 
-	// Tier 4 Mounted (Tier '4')
-	// TODO Update values (previously was tier 6)
-	CAVALRY_SPEAR (4, "Cavalry Spear", "Horseman", 3, 1, -1, false, false),
-	CAVALRY_AXE (4, "Cavalry Axe", "Horseman", 2, 1, 0, true, false),
-	CAVALRY_PICK (4, "Cavalry Pick", "Horseman", 3, 0, 0, true, false),
+	// Tier 4 Mounted (Best total = 4)
+	CAVALRY_SPEAR (4, "Cavalry Spear", "Horseman", 3, 0, 1, false, false),
+	CAVALRY_AXE (4, "Cavalry Axe", "Horseman", 2, 0, 2, true, false),
+	CAVALRY_PICK (4, "Cavalry Pick", "Horseman", 3, -1, 2, true, false),
 
 	// Tier 6 (Best total = 3)
 	PIKE (6, "Pike", "Pikeman",  2, 3, -2, false, false),

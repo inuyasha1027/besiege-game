@@ -43,7 +43,7 @@ public class Map extends Actor {
 
 	public static final int WIDTH = 3000;
 	public static final int HEIGHT = 3000;
-	private static final int NUM_SITES = 800;
+	private static final int NUM_SITES = 1000;
 //	public static boolean debug = true;
 	public static boolean debug = false;
 	public static boolean drawSpheres = false;
@@ -436,6 +436,7 @@ public class Map extends Actor {
 		return !pathExists(d, reference.loc.x, HEIGHT-reference.loc.y);
 	}
 
+	// TODO don't have so many news here
 	public boolean pathExists(Destination start, double px, double py) {
 		// ray casting
 		Corner c1 = new Corner();

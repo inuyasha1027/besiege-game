@@ -19,7 +19,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 public class Farmer extends Army {
 	private final String textureRegion = "Farmer";
 	private final float WAIT = 2.5f;
-	private final float wanderDistance = 30;
+	private final float wanderDistance = 60;
 	private final int farmStart = 7;
 	private final int farmEnd = 20; 
 	private boolean waitToggle;

@@ -96,6 +96,9 @@ public class MapScreen implements Screen {
 		mousePos = new Vector2(0,0);
 		rotation = 0;
 		speedFactor = 1;
+		
+		// if commented out, no more leaks!
+		// leak is in SidePanel.act
 		uiStage.addActor(sidePanel);
 		mouseOverPanel = false;
 		keydown = 0;
@@ -202,10 +205,12 @@ public class MapScreen implements Screen {
 //			uiStage.act(8*delta);
 		}
 		else {
+			
 			kingdomStage.act(delta);
 			uiStage.act(delta);
 		}
-		// add these to same buffer? maybe?
+		
+		
 		kingdomStage.draw();
 		uiStage.draw();
 		
@@ -385,8 +390,12 @@ public class MapScreen implements Screen {
 				debugToggle = false;
 			}
 			
-			if (Gdx.input.isKeyPressed(Keys.ESCAPE))
-				sidePanel.setActiveArmy(kingdom.getPlayer());
+//			if (Gdx.input.isKeyPressed(Keys.ESCAPE)) {
+//				sidePanel.setActiveArmy(kingdom.getPlayer());
+//			}
+			if (Gdx.input.isKeyPressed(Keys.ESCAPE)) {
+				Gdx.app.exit();
+			}
 			
 			if (keydown != 0) {
 				if (keydown == 1) {
