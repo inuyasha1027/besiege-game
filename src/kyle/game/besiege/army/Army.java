@@ -9,7 +9,6 @@ package kyle.game.besiege.army;
 import java.util.Stack;
 
 import kyle.game.besiege.Assets;
-import kyle.game.besiege.Battle;
 import kyle.game.besiege.Destination;
 import kyle.game.besiege.Faction;
 import kyle.game.besiege.Kingdom;
@@ -17,15 +16,18 @@ import kyle.game.besiege.Map;
 import kyle.game.besiege.Path;
 import kyle.game.besiege.Point;
 import kyle.game.besiege.Siege;
+import kyle.game.besiege.battle.Battle;
 import kyle.game.besiege.location.City;
 import kyle.game.besiege.location.Location;
 import kyle.game.besiege.location.Village;
+import kyle.game.besiege.location.Location.LocationType;
 import kyle.game.besiege.panels.BottomPanel;
 import kyle.game.besiege.panels.Panel;
 import kyle.game.besiege.party.Party;
 import kyle.game.besiege.party.PartyType;
 import kyle.game.besiege.voronoi.Center;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -42,9 +44,10 @@ public class Army extends Actor implements Destination {
 	private static final float WAIT = 3; // 3 second wait after garrisoning
 	private static final float scale = .6f;
 	private static final float cityCollisionDistance = 25;
+	private static final float battleCollisionDistance = 15;
 	private static final float COLLISION_FACTOR = 10; // higher means must be closer
 	public static final float ORIGINAL_SPEED_FACTOR = .10f;
-	public static final int A_STAR_FREQ = 10; // army may only set new target every x frames
+	public static final int A_STAR_FREQ = 20; // army may only set new target every x frames
 	private static final float SIZE_FACTOR = .025f; // amount that party size detracts from total speed
 	private static final float BASE_LOS = 40;
 	private static final int MAX_STACK_SIZE = 10;
@@ -53,7 +56,8 @@ public class Army extends Actor implements Destination {
 	private static final int offset = 30;
 	private static final String DEFAULT_TEXTURE = "Player";
 	private static final double REPAIR_FACTOR = .5; // if a party gets below this many troops it will go to repair itself.
-	
+
+
 	private boolean mouseOver;
 	protected boolean passive; // passive if true (won't attack) aggressive if false;
 
@@ -74,7 +78,7 @@ public class Army extends Actor implements Destination {
 	private int momentum; //changes with recent events
 
 	private int updatePolygon;
-	
+
 	protected int lastPathCalc;
 	private boolean stopped;
 	private boolean normalWaiting;
@@ -107,7 +111,7 @@ public class Army extends Actor implements Destination {
 	private Array<Center> closeCenters; 
 
 	Vector2 toTarget;
-	
+
 	private int currentHour; // used for decreasing momentum every hour
 	public boolean playerTouched; // kinda parallel to location.playerIn
 
@@ -142,13 +146,13 @@ public class Army extends Actor implements Destination {
 		this.targetStack = new Stack<Destination>();
 		this.path = new Path(this);
 		this.targetOf = new Array<Army>();
-		
+
 		this.closeArmies = new Array<Army>();
 		this.closeCenters = new Array<Center>();
 
 		this.setPosition(posX, posY);
 		this.setRotation(0);
-		
+
 		this.toTarget = new Vector2();
 
 		setTextureRegion(DEFAULT_TEXTURE); // default texture
@@ -165,7 +169,7 @@ public class Army extends Actor implements Destination {
 
 	@Override
 	public void act(float delta) {
-		
+
 		if (this.lastPathCalc > 0) this.lastPathCalc--;
 		//		setLineOfSight();
 		// Player's Line of Sight:
@@ -213,7 +217,7 @@ public class Army extends Actor implements Destination {
 							if (targetLost()) nextTarget(); // forgot to do this before...
 						}
 						else if (this.hasTarget()) {
-//							if (this.type == ArmyType.FARMER) System.out.println(getName() + " here"); 
+							//							if (this.type == ArmyType.FARMER) System.out.println(getName() + " here"); 
 							detectCollision();
 						}
 					}
@@ -299,6 +303,23 @@ public class Army extends Actor implements Destination {
 		//if (mousedOver()) drawInfo(batch, parentAlpha);
 	}
 
+	public void drawCrest(SpriteBatch batch) {
+		float size_factor = .4f;
+
+		size_factor +=  .005*this.party.getTotalSize();
+
+		Color temp = batch.getColor();
+		float zoom = getKingdom().getMapScreen().getCamera().zoom;
+		zoom *= size_factor; 
+
+		Color clear_white = new Color();
+		clear_white.b = 1;	clear_white.r = 1;	clear_white.g = 1;
+		clear_white.a = .6f;
+		batch.setColor(clear_white);
+		batch.draw(this.getFaction().crest, getCenterX() - 14*zoom, getCenterY() + 5 + 5*zoom, 30*zoom, 45*zoom);
+		batch.setColor(temp);
+	}
+
 	public String getAction() {
 		if (isInBattle()) return "In battle";
 		else if (forceWait) return "Regrouping (" + Panel.format(this.waitUntil-kingdom.clock() + "", 2) + ")";
@@ -317,7 +338,7 @@ public class Army extends Actor implements Destination {
 	}
 
 	public boolean detectCollision() {
-//		if (type == ArmyType.FARMER) System.out.println(getName() + " target  = " + target.getName());
+		//		if (type == ArmyType.FARMER) System.out.println(getName() + " target  = " + target.getName());
 		switch (target.getType()) {
 		case 0: // point reached
 			return detectPointCollision();
@@ -325,6 +346,8 @@ public class Army extends Actor implements Destination {
 			return detectLocationCollision();
 		case 2: // army reached
 			return detectArmyCollision();
+		case 4: // battle reached
+			return detectBattleCollision();
 		default:
 			return false;
 		}
@@ -374,36 +397,56 @@ public class Army extends Actor implements Destination {
 	}
 
 	public void createBattleWith(Army targetArmy) {
-//		System.out.println(this.getName() + " creating battle");
-		Battle b = new Battle(kingdom, this, targetArmy);
-		this.setBattle(b);
-		targetArmy.setBattle(b);
-		kingdom.addBattle(b);
-		kingdom.addActor(b);
+		//		System.out.println(this.getName() + " creating battle");
+
 		if (this == kingdom.getPlayer()) {
-			//			BottomPanel.log("Attacking " + targetArmy.getName() + "! 1");
-			getKingdom().getMapScreen().getSidePanel().setActiveBattle(b);
-			getKingdom().getMapScreen().getSidePanel().setStay(true);
+			BottomPanel.log("Attacking " + targetArmy.getName() + "! 1");
+
+
+
+			//			getKingdom().getMapScreen().getSidePanel().setActiveBattle(b);
+			//			getKingdom().getMapScreen().getSidePanel().setStay(true);
 		}
 		else if (targetArmy == kingdom.getPlayer()) {
 			BottomPanel.log("Attacked by " + this.getName() + "!");
-			getKingdom().getMapScreen().getSidePanel().setActiveBattle(b);
-			getKingdom().getMapScreen().getSidePanel().setStay(true);
+			//			getKingdom().getMapScreen().getSidePanel().setActiveBattle(b);
+			//			getKingdom().getMapScreen().getSidePanel().setStay(true);
+		}
+		else {
+			Battle b = new Battle(kingdom, this, targetArmy);
+			this.setBattle(b);
+			targetArmy.setBattle(b);
+			kingdom.addBattle(b);
+			kingdom.addActor(b);
 		}
 	}
-	
+
+	public boolean detectBattleCollision() {
+		if (distToCenter(getTarget()) < battleCollisionDistance) {
+			Battle targetBattle = (Battle) target;
+			this.joinBattle(targetBattle);
+			return true;
+		}
+		return false;
+	}
+
 	public void joinBattle(Battle battle) {
-		if (battle == null) {
-			System.out.println("joining null battle");
-			return;
+		if (this.party.player) {
+			BottomPanel.log("player joining battle!");
 		}
-		if (this.battle != null) {
-			System.out.println("already in battle");
-			return;
+		else {
+			if (battle == null) {
+				System.out.println("joining null battle");
+				return;
+			}
+			if (this.battle != null) {
+				System.out.println("already in battle");
+				return;
+			}
+			battle.add(this);
+			this.setVisible(false);
+			this.setBattle(battle);
 		}
-		battle.add(this);
-		this.setVisible(false);
-		this.setBattle(battle);
 	}
 
 	public boolean detectLocationCollision() {
@@ -411,7 +454,7 @@ public class Army extends Actor implements Destination {
 			Location targetLocation = (Location) target;
 			if (isAtWar(targetLocation)) {
 				enemyLocationCollision(targetLocation);
-//				if (type == ArmyType.FARMER) System.out.println(getName() + " detectLocationCollision");
+				//				if (type == ArmyType.FARMER) System.out.println(getName() + " detectLocationCollision");
 			}
 			else friendlyLocationCollision(targetLocation);
 			return true;
@@ -440,19 +483,19 @@ public class Army extends Actor implements Destination {
 	}
 
 	public void friendlyLocationCollision(Location targetLocation) {
-//		System.out.println(getName() + " friendslyCollision");
+		//		System.out.println(getName() + " friendslyCollision");
 		if (targetLocation != null)
 			garrisonIn(targetLocation);
 	}
 
 	public void garrisonIn(Location targetCity) {
-//		System.out.println(getName() + " garrisoning");
+		//		System.out.println(getName() + " garrisoning");
 		if (targetCity == null) {
 			System.out.println("null targetcity");
 			return;
 		}
 		// test to see if should garrison goes here
-		
+
 		targetCity.garrison(this); 
 		garrisonedIn = targetCity;
 
@@ -461,7 +504,7 @@ public class Army extends Actor implements Destination {
 			if (followedBy.getTarget() == this) followedBy.nextTarget();
 			followedBy.targetStack.remove(this);
 		}
-		
+
 		// wait/pause AFTER garrisoning!
 		if (party.player) {
 			kingdom.setPaused(true);
@@ -500,7 +543,7 @@ public class Army extends Actor implements Destination {
 				if (shouldEject) {
 					eject();
 					setTarget(null);
-//					System.out.println("ejecting " + this.getName() + " with no target");
+					//					System.out.println("ejecting " + this.getName() + " with no target");
 				}
 				uniqueAct();
 			}
@@ -532,7 +575,7 @@ public class Army extends Actor implements Destination {
 		if (army != null) {
 			if (shouldRunFrom(army) && runFrom != army)  {
 				runFrom(army);
-//				System.out.println(this.getName() + " starting to run from " + army.getName());
+				//				System.out.println(this.getName() + " starting to run from " + army.getName());
 				return 1;
 			}
 			else if (!passive && shouldAttack(army) && (!hasTarget() || target != army)) {
@@ -560,7 +603,7 @@ public class Army extends Actor implements Destination {
 
 	// returns closest army should run from, else closest army should attack, or null if no armies are close.
 	public Army closestHostileArmy() {
-//		if (this.type == ArmyType.PATROL) System.out.println(getName() + " in closest hostile army"); 
+		//		if (this.type == ArmyType.PATROL) System.out.println(getName() + " in closest hostile army"); 
 		// can (slightly) optimize by maintaining close Centers until this army's center changes! TODO
 		// commented for testing
 		double closestDistance = Float.MAX_VALUE;
@@ -588,7 +631,7 @@ public class Army extends Actor implements Destination {
 				if (containing.armies != null) closeArmies.addAll(containing.armies);
 
 			//			System.out.println("Total Armies length: " + kingdom.getArmies().size);
-//			if (this.type == ArmyType.PATROL) System.out.println(getName() + " CloseArmies Length: " + closeArmies.size);
+			//			if (this.type == ArmyType.PATROL) System.out.println(getName() + " CloseArmies Length: " + closeArmies.size);
 
 			for (Army army : closeArmies) {
 				if (this.distToCenter(army) < lineOfSight) {
@@ -632,12 +675,12 @@ public class Army extends Actor implements Destination {
 	}
 	public void wait(float delta) {
 		if (kingdom.clock() >= waitUntil) {
-//			if (type == ArmyType.MERCHANT) System.out.println(getName() + "stopping wait");
+			//			if (type == ArmyType.MERCHANT) System.out.println(getName() + "stopping wait");
 			normalWaiting = false;
 			waitUntil = 0;
 			if (forceWait) { 
 				forceWait = false;
-				this.stopped = false;
+				//				this.stopped = false;
 			}
 		}
 	}
@@ -654,7 +697,7 @@ public class Army extends Actor implements Destination {
 	}
 
 	public boolean shouldRunFrom(Army that) {
-//		if (this.type == ArmyType.PATROL)System.out.println(getName() + " in shouldRun method"); 
+		//		if (this.type == ArmyType.PATROL)System.out.println(getName() + " in shouldRun method"); 
 
 		if (this.getTroopCount() < that.getTroopCount())
 			return true;
@@ -680,6 +723,7 @@ public class Army extends Actor implements Destination {
 				if (targetArmy.getBattle().shouldJoin(this) == 0) // shouldn't join
 					return true;		
 		}
+		//		if ()
 		return false;
 	}
 
@@ -715,7 +759,7 @@ public class Army extends Actor implements Destination {
 	}
 
 	public void stopRunning() {
-//		System.out.println(getName() + " stopping running");
+		//		System.out.println(getName() + " stopping running");
 		runFrom = null;
 		startedRunning = false;
 		nextTarget();
@@ -731,10 +775,10 @@ public class Army extends Actor implements Destination {
 			Location goTo = detectNearbyFriendlyCity();
 			if (distToCenter(runFrom) >= this.getLineOfSight()) {
 				stopRunning();
-//				System.out.println(this.getName() + " stopping running because out of line of sight");
+				//				System.out.println(this.getName() + " stopping running because out of line of sight");
 			}
 			else if (goTo != null) {
-//				System.out.println("detected City " + goTo.getName());
+				//				System.out.println("detected City " + goTo.getName());
 				setTarget(goTo);
 				setSpeed(calcSpeed());   // update speed
 				path.travel();
@@ -744,14 +788,14 @@ public class Army extends Actor implements Destination {
 			else { //if (!this.hasTarget()) {
 				//			System.out.println(getName() + " is running");
 				//			setTarget(getKingdom().getCities().get(0));
-//				System.out.println(getName() + " getting new random run target");
+				//				System.out.println(getName() + " getting new random run target");
 				float distance = getLineOfSight();
 
 				toTarget.x = getCenterX() - runFrom.getCenterX();
 				toTarget.y = getCenterY() - runFrom.getY();
 				toTarget.scl(1/toTarget.len()); // set vector length to 1
 				toTarget.scl(distance);
-				
+
 				// TODO make memory efficient by keeping only one point
 				Point p = new Point(getCenterX() + toTarget.x, getCenterY() + toTarget.y);
 
@@ -760,7 +804,7 @@ public class Army extends Actor implements Destination {
 					toTarget.rotate(rotation);
 					rotation += 10;
 					p.setPos(getX() + toTarget.x, getY() + toTarget.y);
-//					System.out.println("rotating to find new target");
+					//					System.out.println("rotating to find new target");
 				}
 				if (rotation > 360) {// no escape, probably in water
 					p.setPos(getCenterX(), getCenterY());
@@ -860,7 +904,7 @@ public class Army extends Actor implements Destination {
 		//		path.travel();
 		if (siege != null) leaveSiege();
 		battle = null;
-//		if (type == ArmyType.MERCHANT) System.out.println(getName() + " ending battle");
+		//		if (type == ArmyType.MERCHANT) System.out.println(getName() + " ending battle");
 	}
 	public void besiege(Location location) {
 		if (location.getSiege() == null) { 
@@ -882,10 +926,10 @@ public class Army extends Actor implements Destination {
 		nextTarget();
 		if (siege != null) {
 			if (siege.location == this.getTarget()) nextTarget();
-//			while (siege.location == this.getTarget()) {
-//				System.out.println(getName() + " ending siege and going to new target");
-//				nextTarget();
-//			}
+			//			while (siege.location == this.getTarget()) {
+			//				System.out.println(getName() + " ending siege and going to new target");
+			//				nextTarget();
+			//			}
 			siege.remove(this);
 		}
 		siege = null;           
@@ -909,13 +953,13 @@ public class Army extends Actor implements Destination {
 		if (getTarget() != null && getTarget().getType() == 2) {
 			((Army) getTarget()).targetOf.removeValue(this, true);
 		}
-		
-//		if (this.type == ArmyType.FARMER)System.out.println("farmer in setTarget"); 
-		
+
+		//		if (this.type == ArmyType.FARMER)System.out.println("farmer in setTarget"); 
+
 		// don't add same target twice in a row... this is a problem.
-//		if (newTarget.getType() == 2 && ((Army) newTarget).isGarrisoned()) System.out.println("***** TARGET GARRISONED! *****");
-		
-		
+		//		if (newTarget.getType() == 2 && ((Army) newTarget).isGarrisoned()) System.out.println("***** TARGET GARRISONED! *****");
+
+
 		boolean isInWater = kingdom.getMap().isInWater(newTarget);
 		if (!isInWater && !(newTarget.getType() == 2 && ((Army) newTarget).isGarrisoned())) {
 			if (this.target != newTarget && this.lastPathCalc == 0) {
@@ -923,10 +967,10 @@ public class Army extends Actor implements Destination {
 				// don't add a bunch of useless point and army targets
 				if (this.target != null && this.target.getType() != 2 && this.target.getType() != 0 && targetStack.size() < MAX_STACK_SIZE) {
 					targetStack.push(this.target);
-//					System.out.println(getName() + " pushing " + this.target.getName() + " stack size: " + this.targetStack.size() + " new target " + newTarget.getName());
+					//					System.out.println(getName() + " pushing " + this.target.getName() + " stack size: " + this.targetStack.size() + " new target " + newTarget.getName());
 				}
 				this.target = newTarget;
-//				if (newTarget != null && this.path.isEmpty()) {
+				//				if (newTarget != null && this.path.isEmpty()) {
 				if (newTarget != null && this.path.finalGoal != newTarget) {
 					if (this.path.calcPathTo(newTarget)) {
 						this.lastPathCalc = A_STAR_FREQ;
@@ -939,7 +983,7 @@ public class Army extends Actor implements Destination {
 				else if (newTarget == this.path.finalGoal) System.out.println("new goal is already in path");
 			}
 			else {
-//				System.out.println(getName() + "adding same target twice");
+				//				System.out.println(getName() + "adding same target twice");
 				return false;
 			}
 			if (newTarget.getType() == 2) ((Army) newTarget).targetOf.add(this);
@@ -947,7 +991,7 @@ public class Army extends Actor implements Destination {
 		}
 		else if (defaultTarget != null &&
 				!kingdom.getMap().isInWater(defaultTarget)){
-//			System.out.println(getName() + " trying to go to the water (setting target to center of land)");
+			//			System.out.println(getName() + " trying to go to the water (setting target to center of land)");
 			setTarget(defaultTarget);
 			return true;
 		}
@@ -981,7 +1025,7 @@ public class Army extends Actor implements Destination {
 		setTarget(target);
 	}
 	public void findTarget() {
-//		if (this.type == ArmyType.BANDIT) System.out.println("bandit finding target"); 
+		//		if (this.type == ArmyType.BANDIT) System.out.println("bandit finding target"); 
 		setTarget(defaultTarget);
 	}
 	public void setDefaultTarget(Destination defaultTarget) {

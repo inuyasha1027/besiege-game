@@ -6,6 +6,7 @@
 package kyle.game.besiege;
 
 import kyle.game.besiege.army.Army;
+import kyle.game.besiege.battle.Battle;
 import kyle.game.besiege.location.Location;
 import kyle.game.besiege.panels.BottomPanel;
 
@@ -70,12 +71,20 @@ public class Siege extends Actor {
 	
 	public void attack() {
 		System.out.println("attack at " + location.getName());
-		location.siegeAttack(armies);
+		location.siegeAttack(armies, location);
+		// make sure siege is set
+		location.siege = this;
+		System.out.println("SETTING SIEGE");
+//		for (Army a : armies) {
+//			// make sure siege is set
+//			a.setSiege(this);
+//		}f
 		inBattle = true;
 //		if (armies.size >= 1) 
 		this.battle = armies.first().getBattle();
 //		else System.out.println("trying to attack with no armies!");
 		this.battle.siegeOf = location;
+		if (this.battle.siegeOf.siege != this) System.out.println("THIS IS REALLY FUCKED");
 	}
 	public void endAttack() {
 		System.out.println("ending attack at " + location.getName());

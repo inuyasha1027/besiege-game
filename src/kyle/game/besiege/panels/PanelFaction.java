@@ -9,6 +9,7 @@ import kyle.game.besiege.Assets;
 import kyle.game.besiege.Faction;
 import kyle.game.besiege.SidePanel;
 import kyle.game.besiege.army.Noble;
+import kyle.game.besiege.location.Castle;
 import kyle.game.besiege.location.City;
 import kyle.game.besiege.location.Location;
 import kyle.game.besiege.location.ObjectLabel;
@@ -299,14 +300,24 @@ public class PanelFaction extends Panel {
 		Label castlesC = new Label("Castles:", ls);
 		castles.add(castlesC).center();
 		castles.row();
-//		for (Castle c : faction.castles) {
-//			Label castleName = new Label(c.getName(), ls);
-//			cities.add(castleName);
-//			castles.row();
-//		}
-		
-//		if (faction.castles.size == 0) {
-		if (true) {
+		if (faction.castles.size > 0) {
+			for (Castle c : faction.castles) {
+				ObjectLabel castleName = new ObjectLabel(c.getName(), ls, c);
+				castleName.addListener(new InputListener() {
+					public boolean touchDown(InputEvent event, float x,
+							float y, int pointer, int button) {
+						return true;
+					}
+					public void touchUp(InputEvent event, float x, float y,
+							int pointer, int button) {
+						setActiveLocation((Location) ((ObjectLabel) event.getTarget()).object);
+					}
+				});
+				castles.add(castleName);
+				castles.row();
+			}
+		}
+		else {
 			Label empty = new Label("None",ls);
 			castles.add(empty).expandY().fillY().center();	
 		}	

@@ -45,8 +45,8 @@ public class Castle extends Location {
 	private Array<RaidingParty> raiders;
 	private boolean[] raiderExists;
 	
-	private Corner corner;
-	private Center center;
+	public Corner corner;
+	public Center center;
 //	private Array<Village> villages;
 //	private Array<PointH> villageSpots;
 
@@ -57,6 +57,8 @@ public class Castle extends Location {
 				
 		getParty().wealth = wealth;
 		
+		this.DAILY_WEALTH_INCREASE_BASE = 0;
+//		
 		this.getFaction().castles.add(this);
 		
 		scouts = new Array<Patrol>();
@@ -113,7 +115,9 @@ public class Castle extends Location {
 	}
 	
 	public void createScout() {
-		Patrol scout = new Patrol(getKingdom(), this, SCOUT_TRAVEL_FACTOR);
+		Patrol scout = new Patrol(getKingdom(), this);
+		scout.patrolDist = 200;
+		scout.proximityToBase = .1;
 		scout.setName(getFaction().name + " Scout");
 		scout.patrolAround(this);
 		getKingdom().addArmy(scout);
@@ -152,7 +156,7 @@ public class Castle extends Location {
 		// high chance of sucky ones!
 		double random = Math.random();
 		if (random > .9) 		this.nextHire = PartyType.CITY_HIRE_1.generate();
-		else if (random > .5)	this.nextHire = PartyType.CITY_HIRE_2.generate(); // second best
+		else if (random > .7)	this.nextHire = PartyType.CITY_HIRE_2.generate(); // second best
 		else 					this.nextHire = PartyType.CITY_HIRE_3.generate(); // worst
 	}
 //	

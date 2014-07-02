@@ -160,6 +160,8 @@ public class ArmyPlayer extends Army {
 			return detectLocationCollision();
 		case 2: // army reached
 			return detectArmyCollision();
+		case 4: // battle reached
+			return detectBattleCollision();
 		default:
 			return false;
 		}
@@ -193,6 +195,13 @@ public class ArmyPlayer extends Army {
 	}
 	
 	@Override
+	public boolean detectBattleCollision() {
+		// present options to user (join, leave, etc)
+		return super.detectBattleCollision();
+//		return false;
+	}
+	
+	@Override
 	public void enemyArmyCollision(Army targetArmy) {
 		setPaused(true);
 		if (!targetArmy.isInBattle() && !this.isInBattle() && targetArmy.getTarget() != this) {
@@ -220,9 +229,11 @@ public class ArmyPlayer extends Army {
 			if (!targetArmy.hasParent() || targetArmy.isGarrisoned()) {
 				return true;
 			}
-			if (targetArmy.isInBattle())
+			if (targetArmy.isInBattle()){
+					this.joinBattle(targetArmy.getBattle());
 				//if (targetArmy.getBattle().shouldJoin(this) == 0) // Player should get to choose what battles to join!
 					return true;
+			}
 			if (getKingdom().getMapScreen().losOn) {
 				if (distToCenter(getTarget()) > this.getLineOfSight() - 5)
 					return true;
@@ -233,7 +244,12 @@ public class ArmyPlayer extends Army {
 	
 	public void attack(Army army) {
 		createBattleWith(army);
-		BottomPanel.log("Attacking " + getTarget().getName() + "!", "blue5");
+//		BottomPanel.log("Attacking " + getTarget().getName() + "!", "blue5");
+	}
+	
+	// create a battle involving the player
+	public void createPlayerBattleWith(Army army) {
+		
 	}
 	
 	@Override

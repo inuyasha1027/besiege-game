@@ -16,17 +16,22 @@ import kyle.game.besiege.panels.Panel;
 import kyle.game.besiege.party.PartyType;
 
 public class Patrol extends Army {
-	private final float PATROL_DIST;
+ 	private final static int PATROL_TRAVEL_FACTOR = 2;
+
 	private final String textureRegion = "KnightHorse";
+	public float patrolDist;
+	// frequency with which patrol will stay near base (0 to 1)
+	public double proximityToBase;
 	private Location patrolAround;
 
-	public Patrol(Kingdom kingdom, Location defaultTarget, int travelFactor) {
+	public Patrol(Kingdom kingdom, Location defaultTarget) {
 		super(kingdom, defaultTarget.getName() + " Patrol", defaultTarget.getFaction(), defaultTarget.getCenterX(), defaultTarget.getCenterY(), PartyType.PATROL);
 		this.setDefaultTarget(defaultTarget);
 		this.patrolAround = null;
 		setTextureRegion(textureRegion);
 		this.type = ArmyType.PATROL;
-		PATROL_DIST = this.getLineOfSight()*travelFactor;
+		patrolDist = this.getLineOfSight()*PATROL_TRAVEL_FACTOR;
+		System.out.println("Patrol dist is " + patrolDist);
 	}
 	
 	@Override
@@ -48,10 +53,23 @@ public class Patrol extends Army {
 //			System.out.println(getName() + " getting new patrol target");
 
 			Point newTarget;
+			
+			// randomly choose between either point near army or near city, to randomize motion
+			float center_x;
+			float center_y;
+			
+			if (Math.random() < proximityToBase) {
+				center_x = patrolAround.getCenterX();
+				center_y = patrolAround.getCenterY();
+			} else {
+				center_x = this.getCenterX();
+				center_y = this.getCenterY();
+			}
+			
 			do {
-				float dx = (float) ((Math.random()*2-1)*PATROL_DIST); //number btw -1 and 1
-				float dy = (float) ((Math.random()*2-1)*PATROL_DIST);
-				newTarget = new Point(patrolAround.getCenterX() + dx, patrolAround.getCenterY() + dy);
+				float dx = (float) ((Math.random()*2-1)*patrolDist); //number btw -1 and 1
+				float dy = (float) ((Math.random()*2-1)*patrolDist);
+				newTarget = new Point(center_x + dx, center_y + dy);
 			} while (getKingdom().getMap().isInWater(newTarget)); 
 			if (!setTarget(newTarget)) System.out.println(" patrol set bad water targe");;
 		}
@@ -73,7 +91,7 @@ public class Patrol extends Army {
 		getKingdom().removeArmy(this);
 		this.remove();
 		if (getDefaultTarget() != null) {
-			City defaultCity = (City) getDefaultTarget();
+			Location defaultCity = (Location) getDefaultTarget();
 			defaultCity.removePatrol(this);
 		}
 	}

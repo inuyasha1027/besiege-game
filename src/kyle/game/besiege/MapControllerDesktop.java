@@ -64,9 +64,16 @@ public class MapControllerDesktop implements InputProcessor {
 		return false;
 	}
 
+//	@Override
+//	public boolean scrolled(int amount) {
+//		// TODO Auto-generated method stub
+//		return false;
+//	}
+
 	@Override
 	public boolean scrolled(int amount) {
-		screen.zoom(amount*camera.zoom*zoomFactor);
+		if (Gdx.app.getType() == ApplicationType.Desktop)
+			screen.zoom(amount*camera.zoom*zoomFactor);
 		return false;
 	}
 

@@ -25,8 +25,8 @@ public enum PartyType { // todo add ability for max party size
 	
 	// min 40, max 82
 	NOBLE_DEFAULT_1(new Weapon[]{PIKE, HALBERD, LONGSWORD, LANCE, ARMING_SWORD, CAVALRY_SPEAR, CAVALRY_AXE, CAVALRY_PICK, MACE, SHORTSWORD}, 
-			new int[]{5, 5, 5, 4, 4, 5, 5, 5, 5, 5}, new int[] {8, 8, 8, 5, 5, 8, 8, 8, 12, 12}, 0, 0), // best
-			// min 40, max 82
+			new int[]{5, 5, 5, 4, 4, 5, 5, 5, 5, 5}, new int[] {8, 8, 8, 5, 5, 8, 8, 8, 12, 12}, 100, 300), // best
+			// min 40, max 82w
 //	NOBLE_DEFAULT_2(new Weapon[]{PIKE, HALBERD, LONGSWORD, LANCE, ARMING_SWORD, CAVALRY_SPEAR, CAVALRY_AXE, CAVALRY_PICK, MACE, SHORTSWORD}, 
 //			new int[]{5, 5, 5, 4, 4, 5, 5, 5, 5, 5}, new int[] {8, 8, 8, 5, 5, 8, 8, 8, 12, 12}, 0, 0),
 
@@ -34,11 +34,16 @@ public enum PartyType { // todo add ability for max party size
 	CITY_HIRE_2(new Weapon[]{CAVALRY_SPEAR, CAVALRY_AXE, CAVALRY_PICK, MACE, SHORTSWORD}, new int[]{0, 0, 0, 0, 0}, new int[] {2, 2, 2, 2, 2}, 0, 0),
 	CITY_HIRE_3(new Weapon[]{MILITARY_FORK, SPEAR, HATCHET, CLUB}, new int[]{0, 0, 0, 0}, new int[] {2, 3, 3, 3}, 0, 0), // worst
 	
+//	CASTLE_HIRE_1(new Weapon[]{PIKE, HALBERD, LONGSWORD, LANCE, ARMING_SWORD}, new int[]{0, 0, 0, 0, 0}, new int[] {2, 2, 2, 1, 1}, 0, 0), // best
+//	CASTLE_HIRE_2(new Weapon[]{CAVALRY_SPEAR, CAVALRY_AXE, CAVALRY_PICK, MACE, SHORTSWORD}, new int[]{0, 0, 0, 0, 0}, new int[] {2, 2, 2, 2, 2}, 0, 0),
+//	CASTLE_HIRE_3(new Weapon[]{MILITARY_FORK, SPEAR, HATCHET, CLUB}, new int[]{0, 0, 0, 0}, new int[] {2, 3, 3, 3}, 0, 0), // worst
+	
 	VILLAGE_HIRE_1(new Weapon[]{PITCHFORK, MILITARY_FORK}, new int[]{0, 0}, new int[]{6, 4}, 0, 0),
 	VILLAGE_HIRE_2(new Weapon[]{PITCHFORK, MILITARY_FORK}, new int[]{0, 0}, new int[]{6, 0}, 0, 0),
 	VILLAGE_HIRE_3(new Weapon[]{PITCHFORK, MILITARY_FORK}, new int[]{0, 0}, new int[]{4, 0}, 0, 0),
 	
 	CITY_GARR_1(new Weapon[]{SPEAR, PIKE, HALBERD, LONGSWORD}, new int[]{10, 10, 10, 10}, new int[]{20, 20, 20, 20}, 0, 0),
+//	CITY_GARR_1(new Weapon[]{SPEAR, PIKE, HALBERD, LONGSWORD}, new int[]{1, 1, 1, 1}, new int[]{20, 20, 20, 20}, 0, 0),
 	
 	HUGE(new Weapon[]{MACE}, new int[]{100}, new int[]{100}, 0, 0);
 //	VILLAGE_HIRE_1(new Weapon[]{}, new int[]{}, new int[]{}, 0, 0);

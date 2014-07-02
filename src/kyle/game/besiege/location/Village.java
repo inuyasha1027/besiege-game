@@ -19,14 +19,12 @@ import com.badlogic.gdx.utils.Array;
 
 public class Village extends Location {
 	private final float SCALE = 7;
+	
 	private final int HIGH_WEALTH = 100;
 	private final int MED_WEALTH = 50;
 
 	private final String textureRegion = "Village";
-	
-//	private City parent;
-	private int population = 1000;
-	
+		
 	public Array<Farmer> farmers;
 
 	public Village(Kingdom kingdom, String name, int index, Faction faction,
@@ -34,6 +32,14 @@ public class Village extends Location {
 		super(kingdom, name, index, faction, posX, posY, new Party());
 		this.type = LocationType.VILLAGE;
 		getParty().wealth = wealth;
+		
+		this.DAILY_WEALTH_INCREASE_BASE = 1;
+		this.DAILY_POP_INCREASE_BASE = 0.01;
+
+		POP_MIN = 100;
+		POP_MAX = 1000;
+		
+		this.population = Math.random()*(POP_MAX - POP_MIN) + POP_MIN;
 		
 		setTextureRegion(textureRegion);
 		

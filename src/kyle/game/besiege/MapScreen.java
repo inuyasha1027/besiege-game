@@ -70,6 +70,8 @@ public class MapScreen implements Screen {
 	private boolean nightToggle;
 	
 	private boolean territoryToggle;
+	private boolean crestsToggle;
+	private boolean armyCrestsToggle;
 	private boolean debugToggle;
 	
 //	public PrintWriter out; // accessed by kingdom
@@ -214,7 +216,8 @@ public class MapScreen implements Screen {
 		kingdomStage.draw();
 		uiStage.draw();
 		
-		if (shouldCenter && !kingdom.isPaused()) center(); // maybe should be in kingdom
+		//if (shouldCenter && !kingdom.isPaused()) center(); // maybe should be in kingdom
+		if (shouldCenter) center(); // maybe should be in kingdom
 	}
 	
 	public void moveUp() {
@@ -388,6 +391,19 @@ public class MapScreen implements Screen {
 			else if (debugToggle) {
 				Map.debug = !Map.debug;
 				debugToggle = false;
+			}
+			
+			if (Gdx.input.isKeyPressed(Keys.Y))
+				crestsToggle = true;
+			else if (crestsToggle) {
+				Kingdom.drawCrests = !Kingdom.drawCrests;
+				crestsToggle = false;
+			}
+			if (Gdx.input.isKeyPressed(Keys.U))
+				armyCrestsToggle = true;
+			else if (armyCrestsToggle) {
+				Kingdom.drawArmyCrests = !Kingdom.drawArmyCrests;
+				armyCrestsToggle = false;
 			}
 			
 //			if (Gdx.input.isKeyPressed(Keys.ESCAPE)) {

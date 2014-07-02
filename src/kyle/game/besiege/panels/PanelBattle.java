@@ -6,12 +6,12 @@
 package kyle.game.besiege.panels;
 
 import kyle.game.besiege.Assets;
-import kyle.game.besiege.Battle;
 import kyle.game.besiege.Character;
 import kyle.game.besiege.MiniMap;
 import kyle.game.besiege.SidePanel;
 import kyle.game.besiege.army.Army;
 import kyle.game.besiege.army.ArmyPlayer;
+import kyle.game.besiege.battle.Battle;
 import kyle.game.besiege.party.Party;
 import kyle.game.besiege.party.Soldier;
 import kyle.game.besiege.party.SoldierLabel;
@@ -243,6 +243,8 @@ public class PanelBattle extends Panel { // TODO organize soldier display to con
 		
 		text.row();
 		
+		
+		
 		// Soldier's stats
 		stats = new Table();
 		stats.setVisible(false);
@@ -307,7 +309,7 @@ public class PanelBattle extends Panel { // TODO organize soldier display to con
 	@Override
 	public void act(float delta) {
 //		System.out.println("acting " + delta + " is over: " + battle.isOver);
-		title.setText("Battle (over: "+battle.isOver +")");
+		title.setText("Battle!");
 		if (battle.isOver) {
 			if (!battle.didAtkWin) {
 //				System.out.println("def won");
@@ -335,15 +337,30 @@ public class PanelBattle extends Panel { // TODO organize soldier display to con
 		else {
 			boolean shouldUpdate = false;
 			for (Army army : battle.aArmies)
-				if (army.getParty().updated) shouldUpdate = true;
-			for (Army army : battle.dArmies)
-				if (army.getParty().updated) shouldUpdate = true;
-			for (Army army : battle.aArmiesRet)
-				if (army.getParty().updated) shouldUpdate = true;
-			for (Army army : battle.dArmiesRet)
-				if (army.getParty().updated) shouldUpdate = true;
+				if (army.getParty().updated) {
+					shouldUpdate = true;
+					army.getParty().updated = false;
+				}
+//			if (!shouldUpdate)
+				for (Army army : battle.dArmies)
+					if (army.getParty().updated) {
+						shouldUpdate = true;
+						army.getParty().updated = false;
+					}
+//			if (!shouldUpdate)
+				for (Army army : battle.aArmiesRet)
+					if (army.getParty().updated) {
+						shouldUpdate = true;
+						army.getParty().updated = false;
+					}
+//			if (!shouldUpdate)
+				for (Army army : battle.dArmiesRet)
+					if (army.getParty().updated) {
+						shouldUpdate = true;
+						army.getParty().updated = false;
+					}
 			if (shouldUpdate) {
-				System.out.println("updated soldier table");
+//				System.out.println("updated soldier table");
 				updateTopTable();
 				updateSoldierTable();
 			}
@@ -351,6 +368,7 @@ public class PanelBattle extends Panel { // TODO organize soldier display to con
 		super.act(delta);
 	}
 	
+	// modularize this please
 	public void updateTopTable() {
 		boolean aAllies = false;
 		boolean dAllies = false;
@@ -442,24 +460,60 @@ public class PanelBattle extends Panel { // TODO organize soldier display to con
 				table.add(retreating).padBottom(0);
 				table.row();
 			}
-			for (Soldier s : party.getHealthy()) {
-				SoldierLabel name = new SoldierLabel(s.name, lsSmall, s);
-				if (table == dTable)
-					name.setAlignment(Align.right);
+			
+			
+			// do consolidated view
+			
+			
+//			for (Array<Soldier> type : types) {
+//				Label name = new Label(type.first().name, lsSmall);
+//				table.add(name).left();
+//				Label count = new Label(type.size + "", lsSmall);
+//				table.add(count).right();
+//				table.row();
+//			}
+			
+			Array<Array<Soldier>> consolHealthy = party.getConsolHealthy();
+			
+			for (Array<Soldier> as : consolHealthy) {
+				Label name = new Label(as.first().name, lsSmall);
+				
 				name.setWrap(true);
-				name.addListener(new ClickListener() {
-					public void enter(InputEvent event, float x,
-							float y, int pointer, Actor fromActor) {
-						setStats(((SoldierLabel) event.getTarget()).soldier);
-					}
-					public void exit(InputEvent event, float x, float y,
-							int pointer, Actor fromActor) {
-						clearStats();
-					}
-				});
-				table.add(name).width(table.getWidth());
-			//	Label count = new Label(s.level +"", ls);
-			//	table.add(count).right();
+//				name.addListener(new ClickListener() {
+//					public void enter(InputEvent event, float x,
+//							float y, int pointer, Actor fromActor) {
+//						setStats(((SoldierLabel) event.getTarget()).soldier);
+//					}
+//					public void exit(InputEvent event, float x, float y,
+//							int pointer, Actor fromActor) {
+//						clearStats();
+//					}
+//				});
+				table.add(name).width(table.getWidth()*3/4);
+				Label count = new Label(as.size +"", lsSmall);
+				table.add(count).right();
+				table.row();
+			}
+			
+			Array<Array<Soldier>> consolWounded = party.getConsolWounded();
+			
+			for (Array<Soldier> as : consolWounded) {
+				Label name = new Label(as.first().name, lsSmallG);
+				
+				name.setWrap(true);
+//				name.addListener(new ClickListener() {
+//					public void enter(InputEvent event, float x,
+//							float y, int pointer, Actor fromActor) {
+//						setStats(((SoldierLabel) event.getTarget()).soldier);
+//					}
+//					public void exit(InputEvent event, float x, float y,
+//							int pointer, Actor fromActor) {
+//						clearStats();
+//					}
+//				});
+				table.add(name).width(table.getWidth()*3/4);
+				Label count = new Label(as.size +"", lsSmallG);
+				table.add(count).right();
 				table.row();
 			}
 			
@@ -470,26 +524,28 @@ public class PanelBattle extends Panel { // TODO organize soldier display to con
 //			woundedC.setAlignment(0,0);
 //			table.add(woundedC).padTop(0);
 //			table.row();
-			for (Soldier s : party.getWounded()) {
-				SoldierLabel name = new SoldierLabel(s.name, lsSmallG, s);
-				if (table == dTable)
-					name.setAlignment(Align.right);
-				name.setWrap(true);
-				name.addListener(new ClickListener() {
-					public void enter(InputEvent event, float x,
-							float y, int pointer, Actor fromActor) {
-						setStats(((SoldierLabel) event.getTarget()).soldier);
-					}
-					public void exit(InputEvent event, float x, float y,
-							int pointer, Actor fromActor) {
-						clearStats();
-					}
-				});
-				table.add(name).width(table.getWidth());
-				//Label count = new Label(s.level +"", ls);
-				//table.add(count).right();
-				table.row();
-			}
+			
+			
+//			for (Soldier s : party.getWounded()) {
+//				SoldierLabel name = new SoldierLabel(s.name, lsSmallG, s);
+//				if (table == dTable)
+//					name.setAlignment(Align.right);
+//				name.setWrap(true);
+////				name.addListener(new ClickListener() {
+////					public void enter(InputEvent event, float x,
+////							float y, int pointer, Actor fromActor) {
+////						setStats(((SoldierLabel) event.getTarget()).soldier);
+////					}
+////					public void exit(InputEvent event, float x, float y,
+////							int pointer, Actor fromActor) {
+////						clearStats();
+////					}
+////				});
+//				table.add(name).width(table.getWidth()*3/4);
+//				Label count = new Label(s.level +"", lsSmall);
+//				table.add(count).right();
+//				table.row();
+//			}
 			table.add().padBottom(PAD);
 			table.row();
 		}

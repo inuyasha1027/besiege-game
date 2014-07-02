@@ -56,6 +56,18 @@ public class Faction {
 	public static Array<Faction> factions;
 	public static final Faction BANDITS_FACTION = new Faction("Bandits", "crestBandits", Color.BLACK);
 	public static final Faction PLAYER_FACTION = new Faction("Rogue", "crestBlank", Color.WHITE);
+	
+	public static final Color BROWN = new Color(184/256.0f, 119/256.0f, 25/256.0f, 1);
+	public static final Color OLIVE = new Color(107/256.0f, 138/256.0f, 48/256.0f, 1);
+	public static final Color RED = new Color(148/256.0f, 34/256.0f, 22/256.0f, 1);
+	public static final Color MAGENTA = new Color(122/256.0f, 41/256.0f, 83/256.0f, 1);
+	public static final Color BLUE = new Color(53/256.0f, 128/256.0f, 144/256.0f, 1);
+	public static final Color TAN = new Color(176/256.0f, 169/256.0f, 57/256.0f, 1);
+	public static final Color PURPLE = new Color(73/256.0f, 54/256.0f, 158/256.0f, 1);
+	public static final Color TEAL = new Color(57/256.0f, 170/256.0f, 115/256.0f, 1);
+	public static final Color GREEN = new Color(41/256.0f, 72/256.0f, 33/256.0f, 1);
+
+	
 	private  static int factionCount;
 
 	private static Array<Array<Integer>> factionRelations; // should break into multiple arrays
@@ -95,13 +107,13 @@ public class Faction {
 		// add bandits faction (index 1)
 		createFaction(BANDITS_FACTION);	
 
-		createFaction("Halmera", "crestBlueRose", Color.BLUE);
-		createFaction("Geinever", "crestWhiteLion", Color.RED);
-		createFaction("Weyvel", "crestGreenTree", Color.GREEN);
-		createFaction("Rolade", "crestOrangeCross", Color.YELLOW);
-		createFaction("Selven", "crestGreenStripe", Color.MAGENTA);
-		createFaction("Myrnfar", "crestYellowStar", Color.CYAN);
-		createFaction("Corson", "crestRedCross", Color.RED);
+		createFaction("Geinever", "crestWhiteLion", Color.DARK_GRAY);
+		createFaction("Weyvel", "crestGreenTree", OLIVE);
+		createFaction("Rolade", "crestOrangeCross", BROWN);
+		createFaction("Myrnfar", "crestYellowStar", TAN);
+		createFaction("Corson", "crestRedCross", RED);
+		createFaction("Selven", "crestGreenStripe", GREEN);
+		createFaction("Halmera", "crestBlueRose", BLUE);
 
 		createFaction("Fernel", "crestBlank", Color.LIGHT_GRAY);
 		createFaction("Draekal", "crestBlank", Color.MAGENTA);
@@ -245,6 +257,10 @@ public class Faction {
 				double dist = Kingdom.distBetween(city, centerPoint);
 				score += 1/dist;
 			}
+			for (Castle castle : faction.castles) {
+				double dist = Kingdom.distBetween(castle, centerPoint);
+				score += 0.8/dist;
+			}
 			if (score > bestScore) {
 				bestScore = score;
 				bestFaction = faction;
@@ -293,10 +309,27 @@ public class Faction {
 		}
 		else if (Kingdom.getTotalHour() % CHECK_FREQ != 0) hasChecked = false;
 	}
+	
+	// reallocate nobles from this city if it's taken by an enemy
+	public void allocateNoblesFrom(City city) {
+		for (Noble noble : city.nobles) 
+			this.getRandomCity().addNoble(noble);
+	}
+	
+	// create new nobles for this city
+	public void allocateNoblesFor(City city) {
+		assert(this.cities.contains(city, true));
+		this.createNobleAt(city);
+		// new noble created everytime a city is captured... but also nobles will die when they lose big battles
+	}
+	
 	public void manageNobles() {
-		while (nobles.size < NOBLE_COUNT && cities.size >= 1) {
-			createNobleAt(cities.random());
-		}
+		// if a city doesn't have a noble, create a baron or earl
+		// when a noble is upgraded to the next level (later, if a city is upgraded) add a fresh noob to replace them.
+		
+//		while (nobles.size < NOBLE_COUNT && cities.size >= 1) {
+//			createNobleAt(cities.random());
+//		}
 		manageSieges();
 
 		// figure out whether or not to organize a siege or something!
@@ -319,6 +352,7 @@ public class Faction {
 		locationsToAttack.add(location);
 		int noblesToOrder = Math.max((int) (unoccupiedNobles.size * ORDER_FACTOR), 1);
 		System.out.println(this.name + " is ordering a siege of " + location.getName() + " involving " + noblesToOrder + " nobles");
+		BottomPanel.log(this.name + " is ordering a siege of " + location.getName() + " involving " + noblesToOrder + " nobles", "magenta");
 		while (noblesToOrder > 0) {
 			Noble randomNoble = unoccupiedNobles.random();
 			setTask(randomNoble, location);
@@ -337,6 +371,7 @@ public class Faction {
 		Noble noble = new Noble(location.getKingdom(), location);
 		// randomize size
 		this.addNoble(noble);
+		((City) location).nobles.add(noble);
 		noble.goToNewTarget();
 		location.setContainerForArmy(noble);
 	}

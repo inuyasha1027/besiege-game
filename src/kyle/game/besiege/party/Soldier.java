@@ -283,8 +283,9 @@ public class Soldier implements Comparable { // should create a heal-factor, so 
 	@Override
 	public int compareTo(Object thatObject) {
 		Soldier that = (Soldier) thatObject;
-		if (this.level != that.level)
-			return that.level - this.level;
-		else return this.name.compareTo(that.name);
+		return this.name.compareTo(that.name);		
+//		if (this.name != that.level)
+//			return that.level - this.level;
+//		else return this.name.compareTo(that.name);
 	}
 }

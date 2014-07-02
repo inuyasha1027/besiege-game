@@ -18,15 +18,16 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.utils.Array;
 
 public class Assets {
-	private static int cityCount = 15;
-	private static int castleCount = 0;
-	private static int villageCount = 20;
+	private static int cityCount = 20;
+	private static int castleCount = 18;
+	private static int villageCount = 30;
 	public static Array<String> cityArray;
 	public static Array<String> villageArray;
 	public static Array<String> castleArray;
 	//	public static Scanner cityList;
 	//	public static Scanner villageList;
 	public static TextureAtlas atlas;
+	public static TextureAtlas weapons;
 	public static TextureAtlas map;
 	public static Texture map1;
 	public static Texture map2;
@@ -46,6 +47,8 @@ public class Assets {
 	public static BitmapFont pixel22;
 	public static BitmapFont pixel24;
 	public static BitmapFont pixel30;
+	public static BitmapFont pixel40;
+	public static BitmapFont pixel50;
 	public static BitmapFont pixel64;
 	public static BitmapFont pixel80;
 	public static BitmapFont pixel100;
@@ -56,6 +59,7 @@ public class Assets {
 
 	public static void load() {
 		atlas = new TextureAtlas(Gdx.files.internal("atlas1.atlas"));
+		weapons = new TextureAtlas(Gdx.files.internal("weapons.atlas"));
 		//		map = new TextureAtlas(Gdx.files.internal("mapAtlas.atlas"));
 		//		map1 = new Texture(Gdx.files.internal("map/Map2_1.PNG"));
 		//		map2 = new Texture(Gdx.files.internal("map/Map2_2.PNG"));
@@ -201,8 +205,13 @@ public class Assets {
 		
 		// go backwards in list for castles, starting from bottom
 		castleArray = new Array<String>();
-		for (int i = villageArray.size-1; i >= villageArray.size-1-castleCount; i--)
-			castleArray.add(castlesVillages[i]);
+		for (int i = villageArray.size-1; i >= villageArray.size-1-castleCount; i--) {
+			if (castlesVillages[i].length() < 8) {
+				if (Math.random() < .7)
+					castleArray.add(castlesVillages[i] + " Castle");
+				else castleArray.add(castlesVillages[i] + " Fortress");
+			}
+		}
 
 		//		cityList = new Scanner(Gdx.files.internal("mapSmall.txt").readString());
 		//		cityList = new Scanner(Gdx.files.internal("map40.txt").readString());
@@ -222,6 +231,8 @@ public class Assets {
 		pixel22 = new BitmapFont(Gdx.files.internal("data/droid22.fnt"), false);
 		pixel24 = new BitmapFont(Gdx.files.internal("data/droid24neg.fnt"), false);
 		pixel30 = new BitmapFont(Gdx.files.internal("data/droid30.fnt"), false);
+		pixel40 = new BitmapFont(Gdx.files.internal("data/droid40.fnt"), false);
+		pixel50 = new BitmapFont(Gdx.files.internal("data/droid50.fnt"), false);
 		pixel64 = new BitmapFont(Gdx.files.internal("data/droid64.fnt"), false);
 		pixel80 = new BitmapFont(Gdx.files.internal("data/droid80.fnt"), false);
 		pixel100 = new BitmapFont(Gdx.files.internal("data/droid100.fnt"), false);
@@ -235,6 +246,7 @@ public class Assets {
 
 	public static void dispose() {
 		atlas.dispose();
+		weapons.dispose();
 //		map.dispose();
 	}
 }

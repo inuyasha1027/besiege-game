@@ -14,8 +14,8 @@ import kyle.game.besiege.party.PartyType;
 
 
 public class Merchant extends Army {
-	public static int MERCHANT_WAIT = 10;
-	private final double waitTime = 10;
+	public static int MERCHANT_WAIT = 30;
+//	private final double waitTime = 10;
 	private final String textureRegion = "Merchant";
 	private City goal;
 

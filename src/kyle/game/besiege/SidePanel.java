@@ -7,6 +7,8 @@ package kyle.game.besiege;
 
 import kyle.game.besiege.army.Army;
 import kyle.game.besiege.army.ArmyPlayer;
+import kyle.game.besiege.battle.Battle;
+import kyle.game.besiege.battle.Unit;
 import kyle.game.besiege.location.Location;
 import kyle.game.besiege.panels.BottomPanel;
 import kyle.game.besiege.panels.Panel;
@@ -15,11 +17,9 @@ import kyle.game.besiege.panels.PanelBattle;
 import kyle.game.besiege.panels.PanelCharacter;
 import kyle.game.besiege.panels.PanelFaction;
 import kyle.game.besiege.panels.PanelLocation;
-import kyle.game.besiege.panels.PanelMain;
 import kyle.game.besiege.panels.PanelParty;
 import kyle.game.besiege.panels.PanelUpgrades;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -170,6 +170,10 @@ public class SidePanel extends Group {
 	public void setActiveFaction(Faction faction) {
 		PanelFaction pf = new PanelFaction(this, faction);
 		setActive(pf);
+	}
+	public void setActiveUnit(Unit unit) {
+//		PanelFaction pf = new PanelFaction(this, faction);
+//		setActive(pf);
 	}
 	public void setDefault() {
 		setActive(party); // can change

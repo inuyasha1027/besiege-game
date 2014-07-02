@@ -85,39 +85,37 @@ Day 60: fixed player offset bug, fixed retreat time = 1 bug,
 Day 61: added castle class, cleaned faction location management 
 Day 62: fixed one major memory leak bug
 Day 63: fixed major bug that would call A* very frequently (armies would still follow garrisoned armies)
+Day 64: added texts and crests for city names
+Day 65: began working on battlestage
+Day 66: added custom weapons to battlestage
+Day 67: integrated battlestage into game
+
 
 now (mostly engine issues):
-
-bandits (possible all armies running) are adding a shit ton of things to their stack. fix this.
-
 mostly solved!
 big problem: heap is growing very fast with objects, then being garbage collected so all the objects go away. try to prevent this somehow. This isn't soldiers, because they're not created and destroyed. Must be some other problem. Pathfinding maybe. Growing up to using 200mb at max use. should be much lower. Shit ton of memory leaks beacuse garbage collection gets rid of a billion things.
 
-Tried with no effect:
-only one soldier per army
-no creation of new sites in pathfinding (as if no borders)
-commented out kingdom.act (WHAT THE F) char[] ncreasing to 40 mb, object 30
-commented out addActor(kingdom) still increases to 200mb, but slowly
-commented out addActor(sidePanel), static at 69mb (still too big!), 33mb of int
-commented out new Kingdom, static at 30mb (mostly byte[], char[], int[])
-commented out new(sidePanel), increases to 200mb quickly
 
-might not be disposing properly, or cleaning spritebatch properly
-
-tried removing army.act, bytes still increase  to 200mb but much slower now
-
+are these actually problems:
 implement army repairing based on wealth (?)
 allow joining battles (?)
 some armies just get "stuck" after battle - find out why (?)
-armies can't garrison in their own towns sometimes
-fix glitch where player can't move after winning battle
+armies can't garrison in their own towns sometimes (?) 
+fix glitch where player can't move after winning battle (?)
 make bandits not seige (?)
-add city garrison/wealth management
-fix "economy"
+
+
 
 later:
 
+
+make a realistic world:
+nobles are not besieging for some reason. figure out why. also allow besieging of castles.
+
 gameplay:
+
+
+
 add resting - in cities and outside - for player and others.
 implement "honor" and baronage for player
 change "back" button to use a stack
@@ -126,6 +124,9 @@ add partyCap for nobles and player
 fix " upgrade for flail not found!" (allow veteran upgrade)
 make farmers not spawn immediately!
 give names to each region (and village names will be the same), and castle names will be "____ castle" or "____ fortress" 
+add city garrison/wealth management
+fix "economy"
+
 
 where should I put these? could put them on corners or centers, if corners, how to make sure they don't share names with a city or castle? 
 use completely different names...? ok

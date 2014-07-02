@@ -28,7 +28,7 @@ public enum Weapon {
 
 	// Tier 6 (Best total = 3)
 	PIKE (6, "Pike", "Pikeman",  2, 3, -2, false, false),
-	HALBERD (6, "Halberd", "Poleaxeman", 3, 2, -2, false, false),
+	HALBERD (6, "Halberd", "Poleman", 3, 2, -2, false, false),
 	LONGSWORD (6, "Longsword", "Swordsman", 2, 2, -1, false, false),
 	BATTLE_AXE (6, "Battle Axe", "Axeman", 3, 1, -1, false, false),
 	SHORTSWORD (6, "Shortsword", "Swordsman", 2, 1, 0, true, false),
@@ -37,9 +37,9 @@ public enum Weapon {
 	
 	// Tier 8 Mounted (Tier '5') 
 	// TODO Update values (previously was tier 8)
-	LANCE (6, "Lance", "Lancer Knight", 4, 1, -1, false, false),
-	ARMING_SWORD (6, "Arming Sword", "Blade Knight", 3, 1, 0, true, false),
-	FLAIL (6, "Flail", "Dread Knight", 4, 0, 0, true, false),
+	LANCE (6, "Lance", "Lancer", 4, 1, -1, false, false),
+	ARMING_SWORD (6, "Arming Sword", "Slicer", 3, 1, 0, true, false),
+	FLAIL (6, "Flail", "Flailer", 4, 0, 0, true, false),
 	
 	// Tier 8 (Best total = 4)
 	GUISARME (8, "Guisarme", "Pikemaster", 3, 3, -2, false, false),
@@ -153,5 +153,9 @@ public enum Weapon {
 				BottomPanel.log("Upgrade for \"" + weapon.name + "\" not found!");
 		}
 		return upgrades;
+	}
+	
+	public int getCost() {
+		return TIER_COST[this.tier];
 	}
 }

@@ -45,8 +45,8 @@ public class Map extends Actor {
 	public static final int HEIGHT = 3000;
 	private static final int NUM_SITES = 1000;
 //	public static boolean debug = true;
-	public static boolean debug = false;
-	public static boolean drawSpheres = false;
+	public static boolean debug;
+	public static boolean drawSpheres;
 	public VoronoiGraph vg;
 
 	private static final TextureRegion test = Assets.atlas.findRegion("crestRedCross");
@@ -423,6 +423,10 @@ public class Map extends Actor {
 //	}
 	
 	private void addToAvailableCorners(Corner c) {
+//		if (c == null) {
+//			System.out.println("NULL");
+//			return;
+//		}
 		if (!availableCorners.contains(c, true))
 			availableCorners.add(c);
 	}
@@ -876,7 +880,7 @@ public class Map extends Actor {
 	
 			// draw spheres of influence
 			for (Faction f : Faction.factions) {
-				sr.setColor(f.color.r, f.color.g, f.color.b, .5f);
+				sr.setColor(f.color.r, f.color.g, f.color.b, .7f);
 				for (Center c : f.centers) {
 					for (float[] vertices : c.triangles) {
 						sr.triangle(vertices[0], vertices[1], vertices[2], 

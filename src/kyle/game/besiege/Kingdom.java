@@ -12,6 +12,7 @@ import java.util.Scanner;
 import kyle.game.besiege.army.Army;
 import kyle.game.besiege.army.ArmyPlayer;
 import kyle.game.besiege.army.Bandit;
+import kyle.game.besiege.battle.Battle;
 import kyle.game.besiege.location.Castle;
 import kyle.game.besiege.location.City;
 import kyle.game.besiege.location.Location;
@@ -35,10 +36,13 @@ public class Kingdom extends Group {
 	public static BitmapFont arial;
 	public static final double DECAY = .1;
 	public static final float HOUR_TIME = 2.5f;
-	public static final int CITY_START_WEALTH = 100;
+	public static final int CITY_START_WEALTH = 500;
 	public static final int VILLAGE_START_WEALTH = 10;
+	public static final int CASTLE_START_WEALTH = 100;
 	public static final int BANDIT_FREQ = 1000;
 	public static final int MAX_BANDITS = 5;
+	public static boolean drawCrests = true;
+	public static boolean drawArmyCrests = true;
 
 	private final float LIGHT_ADJUST_SPEED = .005f; //adjust this every frame when changing daylight
 	private final float NIGHT_FLOAT = .6f;
@@ -49,12 +53,11 @@ public class Kingdom extends Group {
 	public static float clock;
 	private int timeOfDay; // 24 hour day is 60 seconds, each hour is 2.5 seconds
 	private int day;
-	private boolean night; // is nighttime?
+	public boolean night; // is nighttime?
 	public float currentDarkness; // can be used for LOS
 	private float targetDarkness; // for fading
 
 	private Map map;
-	private PolygonSpriteBatch psb;
 	private MapScreen mapScreen;
 	private Array<Army> armies;
 	public Array<City> cities;
@@ -77,23 +80,17 @@ public class Kingdom extends Group {
 	private ShapeRenderer sr = new ShapeRenderer();
 
 	public Kingdom(MapScreen mapScreen) {
-		//		double time = System.nanoTime();
-		//		System.out.println("starting map");
 		map = new Map();
-
-		//		System.out.println("Map took: " + (System.nanoTime() - time)/1000000000.0);
 
 		clock = 0; // set initial clock
 		timeOfDay = 0;
 		day = 0;
+		
 		//		currentDarkness = NIGHT_FLOAT;
 		currentDarkness = 0; // fade in
 
 		this.mapScreen = mapScreen;
 
-		//		backgroundMap = new BackgroundMap();
-		//		addActor(backgroundMap);
-		// no leak
 		addActor(map);
 
 		armies = new Array<Army>();
@@ -104,36 +101,15 @@ public class Kingdom extends Group {
 
 		Faction.initializeFactions(this);
 
-		// initialize all cities
 		initializeCities();
-		// initialize all villages
 		initializeVillages();
-		//initializeCastles();
+		initializeCastles();
 		
 		Faction.initializeFactionCityInfo();
-		// initialize all castles
-//		Faction.updateFactionCityInfo();
-
-		//		for (Faction f: factions) {
-		//			System.out.println(f.name + " enemy cities: ");
-		//			for (City enemy : f.closeEnemyCities)
-		//				System.out.println("   " + enemy.getName() + " (" + enemy.getFaction().name + "), rel with them is " + this.getRelations(f, enemy.getFaction()));
-		//			System.out.println("friendly cities: ");
-		//			for (City friend : f.closeFriendlyCities)
-		//				System.out.println("   " + friend.getName() + " (" + friend.getFaction().name + "), rel with them is " + this.getRelations(f, friend.getFaction()));
-		//		}
-
 
 		for (int i = 0; i < cities.size; i++)
 			cities.get(i).findCloseLocations();
-
-		// initialize all armies
-
-		//		Army test2 = new Army(this, "Test2", 2, 40, 40, 4, 100);
-		//		addArmy(test2);
-		//		test2.setTarget(cities.first());
-		//		test2.waitFor(1);
-
+		
 		arial = new BitmapFont();
 		mouse = new Point(0,0);
 		banditCount = 0;
@@ -152,33 +128,31 @@ public class Kingdom extends Group {
 			time(delta);
 			super.act(delta);
 
-			//create bandits
-			if (banditCount <= MAX_BANDITS && cities.size != 0) {
-				if (Math.random() < 1.0/BANDIT_FREQ) {
-					City originCity = cities.random();
-					//					if (originCity.getVillages().size == 0) 
-					createBandit(originCity);
-				}
-			}
+			manageBandits();
 			Faction.factionAct(delta);
-			//			clearContainingPolygons();
 		}
 		if (leftClicked) leftClicked = false;
 		if (rightClicked) rightClicked = false;
 	}
 
-	// used when traveling
-	// randomly gets really slow
+	public void manageBandits() {
+		if (banditCount <= MAX_BANDITS && cities.size != 0) {
+			if (Math.random() < 1.0/BANDIT_FREQ) {
+				City originCity = cities.random();
+				//					if (originCity.getVillages().size == 0) 
+				createBandit(originCity);
+			}
+		}
+	}
+	
 	// just check adjacent centers!
 	public void updateArmyPolygon(Army army) {
 		if (army.containing != null) {
 
-			// THIS IS THE SLOW PART FUCK
 			// first check if it's left it's previous polygon
 			// if not, return, if so, remove from previous container
 			if (army.containing.polygon != null && army.containing.polygon.contains(army.getCenterX(), army.getCenterY())) {
 				if (!army.containing.armies.contains(army, true)) army.containing.armies.add(army);
-				//				System.out.println("same polygon");
 				return;
 			}
 
@@ -188,10 +162,7 @@ public class Kingdom extends Group {
 				// checks if in connected (all connected have polygon)
 				if (adjacent.polygon != null) {
 					Polygon p = adjacent.polygon;
-					//					System.out.println("updating polygon for " + army.getName());
 					if (p.contains(army.getCenterX(), army.getCenterY())) {
-						//						System.out.println("*************************found containing " + army.getName());
-						//						System.out.println("adjacent polygon");
 						adjacent.armies.add(army);
 						army.containing = adjacent;
 						return;
@@ -211,19 +182,37 @@ public class Kingdom extends Group {
 				return;
 			}
 		}
-		//				System.out.println("not found at all");
 	}
 
+	// update time
 	public void time(float delta) {
 		clock += delta;
 		timeOfDay = (int) ((clock - day*60) / HOUR_TIME);
 		if (timeOfDay == 24) {
+			dailyRoutine();
 			day++;
 		}
 		if (timeOfDay >= DAWN && timeOfDay <= DUSK)
 			night = false;
 		if (timeOfDay <= DAWN || timeOfDay >= DUSK)
 			night = true;
+	}
+	
+	// Events that occur every day
+	private void dailyRoutine() {
+		System.out.println("day is done");
+		
+		// increase village wealth
+		for (Village v : villages) {
+			v.dailyWealthIncrease();
+			v.dailyPopIncrease();
+		}
+		
+		// increase city wealth
+		for (City c : cities) {
+			c.dailyWealthIncrease(); 
+			c.dailyPopIncrease();
+		}
 	}
 
 	private void mouseOver(Point mouse) {
@@ -291,6 +280,10 @@ public class Kingdom extends Group {
 			if (Kingdom.distBetween(village, mouse) <= MOUSE_DISTANCE)
 				dest = village;
 		}
+		for (Castle castle : castles) {
+			if (Kingdom.distBetween(castle, mouse) <= MOUSE_DISTANCE)
+				dest = castle;
+		}
 		for (Army army : armies) {
 			if (army.isVisible() && Kingdom.distBetween(army, mouse) <= MOUSE_DISTANCE)
 				if (mapScreen.losOn) {
@@ -322,19 +315,43 @@ public class Kingdom extends Group {
 		super.draw(batch, parentAlpha);
 		arial.setColor(Color.WHITE);
 		arial.setScale(2*(mapScreen.getCamera().zoom));
+		
+		if (drawCrests) {
+			for (City c : cities)
+				c.drawCrest(batch);
+			for (Village v : villages) 
+				v.drawCrest(batch);
+			for (Castle c : castles) 
+				c.drawCrest(batch);
+		}
+		if (drawArmyCrests) 
+			for (Army a : armies)
+				a.drawCrest(batch);
+		for (City c : cities)
+			c.drawText(batch);
+		for (Village v : villages) 
+			v.drawText(batch);
+		for (Castle c : castles) 
+			c.drawText(batch);
 	}
 
 	public void addCity(City newCity) {
 		cities.add(newCity);
+		newCity.getFaction().createNobleAt(newCity);
+		
 		addActor(newCity);
 	}
 
 	public void initializeCities() {	
 		Array<String> cityArray = Assets.cityArray;
 		//		Scanner scanner = Assets.cityList;
-		int currentFaction = 2; // no bandits or player 
-		int factionRepeats = 0;
-		int maxRepeats = (int) (Math.random()*3) + 1; // max 2, min 0
+		
+//		int currentFaction = 2; // no bandits or player 
+//		int factionRepeats = 0;
+		
+//		int maxRepeats = (int) (Math.random()*3) + 1; // max 2, min 0
+		int maxRepeats = 4;
+		
 		//		while (scanner.hasNextLine() && (map.cityCorners.size > 0 && map.cityCenters.size > 0)) {
 		while (cityArray.size > 0 && (map.cityCorners.size > 0 && map.cityCenters.size > 0)) {
 			//			System.out.println("adding city");
@@ -372,8 +389,27 @@ public class Kingdom extends Group {
 					}
 				}
 				int index = -1;
-				//				city = new City(this, scanner.next(), index, Faction.get(currentFaction), x, Map.HEIGHT-y, CITY_START_WEALTH);
-				city = new City(this, cityArray.pop(), index, Faction.get(currentFaction), x, Map.HEIGHT-y, CITY_START_WEALTH);
+				// calculate the closest city
+				double closestDistance = 9999999;
+				City closestCity = null;
+				for (City c : cities) {
+					double distance = c.distTo(x, Map.HEIGHT-y);
+					if (distance < closestDistance) {
+						closestCity = c;
+						closestDistance = distance;
+					}	
+				}
+				Faction faction = null;
+				if (closestCity == null || closestCity.getFaction().cities.size > maxRepeats) {
+					int factionIndex = 2;
+					while (Faction.get(factionIndex).cities.size > maxRepeats)
+						factionIndex++;
+					faction = Faction.get(factionIndex);
+				}
+				else faction = closestCity.getFaction();
+				
+				city = new City(this, cityArray.pop(), index, faction, x, Map.HEIGHT-y, CITY_START_WEALTH);
+//				city = new City(this, cityArray.pop(), index, Faction.get(currentFaction), x, Map.HEIGHT-y, CITY_START_WEALTH);
 				city.setCorner(corner);
 			}
 			// make with center
@@ -406,18 +442,48 @@ public class Kingdom extends Group {
 				}
 				int index = -1;
 				//				city = new City(this, scanner.next(), index, Faction.get(currentFaction), x, Map.HEIGHT-y, CITY_START_WEALTH);
-				city = new City(this, cityArray.pop(), index, Faction.get(currentFaction), x, Map.HEIGHT-y, CITY_START_WEALTH);
+				
+				// calculate the closest city
+				double closestDistance = 9999999;
+				City closestCity = null;
+				for (City c : cities) {
+					double distance = c.distTo(x, Map.HEIGHT-y);
+					if (distance < closestDistance) {
+						closestCity = c;
+						closestDistance = distance;
+					}	
+				}
+				Faction faction = null;
+				if (closestCity == null || closestCity.getFaction().cities.size > maxRepeats) {
+					// TODO set faction to be lowest numbered faction without repeats
+					int factionIndex = 2;
+					while (Faction.get(factionIndex).cities.size > maxRepeats)
+						factionIndex++;
+					faction = Faction.get(factionIndex);
+				}
+				else faction = closestCity.getFaction();
+				
+				city = new City(this, cityArray.pop(), index, faction, x, Map.HEIGHT-y, CITY_START_WEALTH);
+//				city = new City(this, cityArray.pop(), index, Faction.get(currentFaction), x, Map.HEIGHT-y, CITY_START_WEALTH);
+
 				city.setCenter(center);
 			}
 
 			addCity(city);
-			factionRepeats++;
-			if (factionRepeats > maxRepeats) {
-				currentFaction++;
-				factionRepeats = 0;
-				maxRepeats = (int) (Math.random()*3) + 1;
-			}
+//			factionRepeats++;
+//			if (factionRepeats > maxRepeats) {
+//				currentFaction++;
+//				factionRepeats = 0;
+//				maxRepeats = (int) (Math.random()*3) + 1;
+//			}
 		}
+		
+		// assign factions to cities
+//		for (City c : cities) {
+//			c.changeFaction(Faction.get(2));
+//		}
+		// best solution: calculate city locations in advance, then assign factions, then create cities.
+		
 		System.out.println("Number cities: " + cities.size);
 	}
 
@@ -437,6 +503,41 @@ public class Kingdom extends Group {
 			addActor(village);
 		}
 		System.out.println("Number villages: " + villages.size);
+	}
+	
+	public void initializeCastles() {
+		Array<String> castleArray = Assets.castleArray;
+
+		int currentFaction = 2; // no bandits or player 
+		int factionRepeats = 0;
+		int maxRepeats = (int) (Math.random()*3) + 1; // max 2, min 0
+		
+		//		while (scanner.hasNextLine() && map.availableCenters.size > 0) {
+		while (castleArray.size > 0 && map.availableCorners.size > 0) {
+			
+			Corner corner;
+			do {
+				System.out.println(map.availableCorners.size);
+				corner = map.availableCorners.random();
+				map.availableCorners.removeValue(corner, true);
+			} while (corner == null && map.availableCorners.size > 0);
+			
+			Castle castle = new Castle(this, castleArray.pop(), -1, Faction.get(currentFaction), (float) corner.loc.x, (float) (Map.HEIGHT-corner.loc.y), CASTLE_START_WEALTH);			
+			castles.add(castle);
+			castle.corner = corner;
+//			if (corner == null) 
+//				System.out.println("ADDING NULL CORNER");
+			addActor(castle);
+			
+			factionRepeats++;
+			if (factionRepeats > maxRepeats) {
+				currentFaction++;
+				factionRepeats = 0;
+				maxRepeats = (int) (Math.random()*3) + 1;
+			}
+		}
+		
+		System.out.println("Number castles: " + villages.size);
 	}
 
 	public void addArmy(Army add) {
@@ -480,6 +581,7 @@ public class Kingdom extends Group {
 		armies.removeValue(remove, true);
 		if (remove.containing != null)
 			remove.containing.armies.removeValue(remove, true);
+		this.removeActor(remove);
 	}
 
 	public Array<Army> getArmies() {

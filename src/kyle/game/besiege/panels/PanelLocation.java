@@ -121,7 +121,7 @@ public class PanelLocation extends Panel { // TODO organize soldier display to c
 		type.setText(location.getTypeStr());
 		
 		garrisonSize = new Label("", ls);
-		garrisonSize.setWrap(true);
+		garrisonSize.setWrap(false);
 		population = new Label("", ls);
 		wealth = new Label("", ls);
 
@@ -151,7 +151,7 @@ public class PanelLocation extends Panel { // TODO organize soldier display to c
 		text.add(type).colspan(4).fillX().expandX();
 		text.row();
 		text.add(garrisonC).colspan(2).padLeft(MINI_PAD);
-		text.add(garrisonSize).colspan(2).left();
+		text.add(garrisonSize).colspan(2).center();
 		text.row();
 		text.add(populationC).padLeft(MINI_PAD);
 		text.add(population).center();
@@ -329,12 +329,16 @@ public class PanelLocation extends Panel { // TODO organize soldier display to c
 		
 	
 		String garrStr = location.garrison.getParty().getHealthySize() + "";
+		int totalGarr = 0;
 		for (Army a: location.getGarrisoned()) {
-			garrStr += "+" + a.getParty().getHealthySize();
+//			garrStr += "+" + a.getParty().getHealthySize();
+			totalGarr += a.getParty().getHealthySize();
 		}
+//		if (totalGarr > 0) garrStr += "+" + totalGarr;
+		if (totalGarr > 0) garrStr = totalGarr + location.garrison.getParty().getHealthySize() + " (" + garrStr + "+" + totalGarr + ")";
 		garrisonSize.setText(garrStr);
 		
-		population.setText(location.getPop() + "");
+		population.setText((int) location.getPop() + "");
 		wealth.setText("" + party.wealth);
 		
 		if (location.underSiege())
@@ -456,6 +460,7 @@ public class PanelLocation extends Panel { // TODO organize soldier display to c
 			else if (playerBesieging && !location.playerWaiting) {
 				BottomPanel.log("charge!");
 				location.getSiege().attack();
+				System.out.println("ATTACKING ");
 			}
 			else { // besiege/raid
 				panel.setStay(false);

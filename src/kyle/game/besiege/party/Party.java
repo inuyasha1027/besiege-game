@@ -15,23 +15,24 @@ import com.badlogic.gdx.utils.Array;
 public class Party {
 	private final double BASE_CHANCE = .5;
 	private final double MIN_WEALTH_FACTOR = 1.4; // times troopcount
-	
+
 	public boolean updated; // does the panel need to be updated.
 	public int wealth;
 	public int minWealth; // keeps the party out of debt, of course!
-	
+	public int maxSize; // current max size of the party
+
 	public boolean player;
 	private Array<Soldier> healthy;
 	private Array<Soldier> wounded;
 	private Array<Soldier> prisoners;
 	private Array<Soldier> upgradable;
-	
+
 	private int atkTotal;
 	private int defTotal;
 	private int spdTotal;
-	
+
 	public double woundChance;
-	
+
 	public Party() {
 		player = false;
 		healthy = new Array<Soldier>();
@@ -41,25 +42,26 @@ public class Party {
 		atkTotal = 0;
 		defTotal = 0;
 		spdTotal = 0;
-		calcStats();
-		
+		calcStats();		
+
+		maxSize = 100;
 		wealth = 0;
-		
+
 		woundChance = BASE_CHANCE;
 	}
-	
+
 	public void act(float delta) {
 		if (player) woundChance = BASE_CHANCE * Character.getAttributeFactor("Reviving");
 		checkHeal();
 		calcStats();
 	}
-	
+
 	public void checkUpgrades() {
 		for (Soldier s : getUpgradable()) {
 			s.upgrade(Weapon.upgrade(s.weapon).random());
 		}
 	}
-	
+
 	public void checkHeal() { // to be called every frame 
 		Iterator<Soldier> iter = wounded.iterator();
 		while (iter.hasNext()) {
@@ -69,18 +71,24 @@ public class Party {
 			updated = true;
 		}
 	}
-	
+
 	public void addSoldier(Soldier soldier) {
-		updated = true;
-		if (soldier.isWounded()) {
-			wounded.add(soldier);
-			wounded.sort();
+		if (this.getTotalSize() >= maxSize) {
+			System.out.println("trying to add more than max size");
+			return;
 		}
 		else {
-			healthy.add(soldier);
-			healthy.sort();
+			updated = true;
+			if (soldier.isWounded()) {
+				wounded.add(soldier);
+				wounded.sort();
+			}
+			else {
+				healthy.add(soldier);
+				healthy.sort();
+			}
+			calcStats();
 		}
-		calcStats();
 	}
 	public void removeSoldier(Soldier soldier) {
 		updated = true;
@@ -114,7 +122,7 @@ public class Party {
 		soldier.wound();
 		healthy.removeValue(soldier, true);
 		this.addSoldier(soldier);
-	//	if (player) BottomPanel.log(soldier.name + " wounded", "orange");
+		//	if (player) BottomPanel.log(soldier.name + " wounded", "orange");
 		calcStats();
 	}
 	public void heal(Soldier soldier) {
@@ -161,7 +169,7 @@ public class Party {
 		else BottomPanel.log("trying to remove invalid prisoner", "red");
 		recipient.addSoldier(prisoner);
 	}
-	
+
 	public int getHealthySize() {
 		return healthy.size;
 	}
@@ -194,6 +202,10 @@ public class Party {
 	}
 	// TODO maybe inefficient? can make more by sorting array by name
 	private Array<Array<Soldier>> getConsol(Array<Soldier> arrSoldier) {
+		// first thing: sort arrSoldier by name
+		arrSoldier.sort();
+
+
 		Array<String> names = new Array<String>();
 		Array<Array<Soldier>> consol = new Array<Array<Soldier>>();
 		for (Soldier s : arrSoldier) {
@@ -209,7 +221,7 @@ public class Party {
 		}
 		return consol;	
 	}
-	
+
 	@Override
 	public String toString() {
 		return null;
@@ -238,12 +250,23 @@ public class Party {
 		healthy.sort();
 	}
 
+	// repairs an army as much as its wealth will allow it.
 	public void repair(PartyType pt) { // returns a repair cost
 		int newSize = pt.getRandomSize();
 		int missing = Math.max(newSize - this.getTotalSize(), 0); // no negative ints
-		while (missing > 0) {
-			this.addSoldier(new Soldier(pt.randomSoldierType(), this));
-			missing--;
+//		int totalCost = 0;
+		boolean canAfford = true;
+		while (missing > 0 && canAfford) {
+			Soldier newSoldier = new Soldier(pt.randomSoldierType(), this);
+			int cost = newSoldier.weapon.getCost();
+			if (this.wealth > cost) {
+				this.addSoldier(newSoldier);
+				this.wealth -= cost;
+				missing--;
+			}
+			else {
+				canAfford = false;
+			}
 		}
 		System.out.println("party repaired");
 	}

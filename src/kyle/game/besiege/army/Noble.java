@@ -16,7 +16,7 @@ import com.badlogic.gdx.math.MathUtils;
 public class Noble extends Army {
 	private static final String[] RANKS = {"Baron", "Earl", "Count", "Duke", "Prince", "Archduke", "King"};
 	private static final int[] REKNOWN_RANK = {0,    50,      100,     150,    200, 	250,		 300, 301}; 
-	private static final int BASE_PC = 35;
+	private static final int BASE_PC = 35; // base party count
 	private static final float REKNOWN_PC_FACTOR = .5f;
 	private final float WAIT = 30;
 	//	private static final int MAX_LEVEL = 25;
@@ -28,7 +28,6 @@ public class Noble extends Army {
 	private Location specialTarget;
 	private boolean toggleWait;
 
-	public int partyCap;
 	//	private int level;
 
 	public Noble(Kingdom kingdom, Location home) {
@@ -48,7 +47,12 @@ public class Noble extends Army {
 		if (random > .67) region = "knightSword";
 		this.setTextureRegion(region);
 
-		this.giveReknown(MathUtils.random(150));//
+		
+		// earl, baron, or count
+		this.giveReknown(MathUtils.random(50));
+		this.giveReknown(MathUtils.random(50));
+		this.giveReknown(MathUtils.random(50));
+
 		//		System.out.println("creating noble");
 		kingdom.addArmy(this);
 		this.type = ArmyType.NOBLE;
@@ -100,7 +104,7 @@ public class Noble extends Army {
 		}
 		else {
 //			System.out.println(getName() + " path is not empty");
-//			path.travel();
+			path.travel();
 		}
 	}
 
@@ -152,15 +156,20 @@ public class Noble extends Army {
 				increaseRank();
 			}
 		}
-		partyCap = (int) (reknown * REKNOWN_PC_FACTOR + BASE_PC);
+		calcMaxPartySize();
 	}
+	
+	public void calcMaxPartySize() {
+		getParty().maxSize = (int) (reknown * REKNOWN_PC_FACTOR + BASE_PC);
+	}
+	
 	private void increaseRank() {
 		this.rank++;
 		rankName = RANKS[rank];
 		nextRank = REKNOWN_RANK[rank+1];
 		updateName();
 	}
-	private void updateName() {
+	public void updateName() {
 		this.setName(rankName + " of " + home.getName());
 	}
 	// for when their old estate no longer belongs to their kingdom.

@@ -11,6 +11,7 @@ import kyle.game.besiege.Kingdom;
 import kyle.game.besiege.Map;
 import kyle.game.besiege.Point;
 import kyle.game.besiege.army.Merchant;
+import kyle.game.besiege.army.Noble;
 import kyle.game.besiege.army.Patrol;
 import kyle.game.besiege.army.RaidingParty;
 import kyle.game.besiege.geom.PointH;
@@ -19,31 +20,27 @@ import kyle.game.besiege.party.PartyType;
 import kyle.game.besiege.voronoi.Center;
 import kyle.game.besiege.voronoi.Corner;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
 public class City extends Location {
-	private final static float SCALE = 10;
-	private final static int PATROL_TRAVEL_FACTOR = 3;
+	private final static float SCALE = 7;
+	private final static int MAX_PATROLS = 3;
 	private static int CITY_UPPER_VALUE = Assets.cityArray.size; // highest number of cities possible
+
 	private final static float closeCityDistance = 500; // cities within this distance are considered "close" for trading, raiding, etc
-//	private final static float villageRangeMax = 80; // min village dist
-//	private final static float villageRangeMin = 10;
-//	private final static float villageSeparation = 60;
 	private final static double MERCHANT_GAIN = .008; // calculates merchant's wealth which goes to other cities.
 	private final int patrolCost;
 	private final int raiderCost;
 	private final int merchantCost;
 	
-	private Array<Patrol> patrols;
 	private Array<Merchant> merchants;
+	public Array<Noble> nobles;
 	private boolean[] merchantExists;
 	private Array<RaidingParty> raiders;
 	private boolean[] raiderExists;
-
-//	private Array<Village> villages;
-//	private Array<PointH> villageSpots;
 
 	public City(Kingdom kingdom, String name, int index, Faction faction, float posX,
 			float posY, int wealth) {
@@ -52,15 +49,23 @@ public class City extends Location {
 				
 		getParty().wealth = wealth;
 		
+		POP_MIN = 2000;
+		POP_MAX = 15000;
+		
+		this.population = Math.random()*(POP_MAX - POP_MIN) + POP_MIN;
+		
+		this.DAILY_WEALTH_INCREASE_BASE = 5;
+		this.DAILY_POP_INCREASE_BASE = 5;
+		
 		this.getFaction().cities.add(this);
-		
-		patrols = new Array<Patrol>();
-		
+				
 		merchants = new Array<Merchant>();
 		merchantExists = new boolean[CITY_UPPER_VALUE];
 		
 		raiders = new Array<RaidingParty>();
 		raiderExists = new boolean[CITY_UPPER_VALUE];
+		
+		nobles = new Array<Noble>();
 
 //		closestFriendlyCities = new Array<City>();
 //		closestEnemyLocations = new Array<City>();
@@ -70,7 +75,7 @@ public class City extends Location {
 		this.patrolCost = PartyType.PATROL.maxWealth;
 		this.raiderCost = PartyType.RAIDING_PARTY.maxWealth;
 		
-		setTextureRegion("Castle");
+		setTextureRegion("City");
 		setScale(SCALE);
 		initializeBox();
 	}
@@ -78,16 +83,12 @@ public class City extends Location {
 	@Override
 	public void draw(SpriteBatch batch, float parentAlpha) {
 		super.draw(batch, parentAlpha);
-//		Assets.pixel18.setColor(Kingdom.factionColors.get(getFaction()));
-//		String toDraw = getName() + " (" + getParty().wealth + ")";
-//		Assets.pixel18.draw(batch, toDraw, getX() - (int) (3*toDraw.length()), getY()-15);
-//		Assets.pixel18.setColor(Color.WHITE);
 	}
 	
 	@Override
 	public void autoManage() {
 		// Organize patrols
-		int patrolCount = (int) (getParty().wealth/(patrolCost*2));
+		int patrolCount = Math.min((int) (getParty().wealth/(patrolCost*10)), MAX_PATROLS);
 		if (getPatrols().size < patrolCount) {
 			this.loseWealth(patrolCost);
 			createPatrol();
@@ -112,19 +113,14 @@ public class City extends Location {
 	}
 	
 	public void createPatrol() {
-		Patrol patrol = new Patrol(getKingdom(), this, PATROL_TRAVEL_FACTOR);
+		Patrol patrol = new Patrol(getKingdom(), this);
+		patrol.proximityToBase = .5;
 		patrol.patrolAround(this);
 		getKingdom().addArmy(patrol);
 		getPatrols().add(patrol);
 		setContainerForArmy(patrol);
 	}
 	
-	public void removePatrol(Patrol patrol) {
-		patrols.removeValue(patrol, true);
-	}
-	public Array<Patrol> getPatrols() {
-		return patrols;
-	}
 	public void createMerchant(int wealth, City goal) {
 		if (this != goal) {
 			Merchant merchant = new Merchant(getKingdom(), this, goal);
@@ -143,6 +139,13 @@ public class City extends Location {
 		merchants.removeValue(merchant, true);
 	}
 
+	public void addNoble(Noble noble) {
+		assert(!this.nobles.contains(noble, true));
+		this.nobles.add(noble);
+		noble.home = this;
+		noble.updateName();
+	}
+	
 //	public void createRaider() {
 //		Village targetVillage = getCloseEnemyVillage();
 //		RaidingParty raider = new RaidingParty(getKingdom(), "Raider", getFaction(), getCenterX(), getCenterY());

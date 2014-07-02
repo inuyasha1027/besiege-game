@@ -3,8 +3,12 @@
  * by Kyle Dhillon
  * Source Code available under a read-only license. Do not copy, modify, or distribute.
  ******************************************************************************/
-package kyle.game.besiege;
+package kyle.game.besiege.battle;
 
+import kyle.game.besiege.Assets;
+import kyle.game.besiege.Destination;
+import kyle.game.besiege.Faction;
+import kyle.game.besiege.Kingdom;
 import kyle.game.besiege.army.Army;
 import kyle.game.besiege.army.Patrol;
 import kyle.game.besiege.army.Army.ArmyType;
@@ -24,6 +28,7 @@ public class Battle extends Actor implements Destination { // new battle system 
 	private static final int EXP_FACTOR = 100; // how much more exp is given to winning party than total atk of enemies
 	private static final int BASE_EXP = 10;
 	private static final int BASE_RETREAT_TIME = 5;
+	private static final double RETREAT_WEALTH_FACTOR = .2; // this is how much of the retreating parties wealth will be lost
 	private static final double RETREAT_THRESHOLD = 0.3; // if balance less than this, army will retreat (btw 0 and 1, but obviously below 0.5)
 	private final int WAIT = 3; // time army must wait after winning a battle to give the retreater a head start? maybe a better way to do this.
 	private final int baseMoraleReward = 25;
@@ -89,8 +94,10 @@ public class Battle extends Actor implements Destination { // new battle system 
 		if (initDefender == kingdom.getPlayer())
 			playerInD = true;
 		else playerInD = false;
-		if (playerInA || playerInD) 
-			kingdom.getMapScreen().getSidePanel().setActiveBattle(this);
+		
+		
+//		if (playerInA || playerInD) 
+//			kingdom.getMapScreen().getSidePanel().setActiveBattle(this);
 		
 		initAttacker.setStopped(true);
 		initDefender.setStopped(true);
@@ -115,11 +122,11 @@ public class Battle extends Actor implements Destination { // new battle system 
 	
 	@Override
 	public void act(float delta) {
-		if (kingdom.getMapScreen().losOn) {
-			if (Kingdom.distBetween(this, kingdom.getPlayer()) > kingdom.getPlayer().getLineOfSight())
-				setVisible(false);
-			else setVisible(true);
-		}
+//		if (kingdom.getMapScreen().losOn) {
+//			if (Kingdom.distBetween(this, kingdom.getPlayer()) > kingdom.getPlayer().getLineOfSight())
+//				setVisible(false);
+//			else setVisible(true);
+//		}
 		
 		calcStats();
 		meleePhase();
@@ -165,9 +172,9 @@ public class Battle extends Actor implements Destination { // new battle system 
 	}
 	
 	public void add(Army army) {
-		army.setVisible(false);
 		int join = shouldJoin(army);
 		if (join == 1)  {
+			army.setVisible(false);
 			if (army == kingdom.getPlayer()) {
 				playerInD = true;
 				kingdom.getMapScreen().getSidePanel().setActiveBattle(this);
@@ -178,6 +185,7 @@ public class Battle extends Actor implements Destination { // new battle system 
 			army.setVisible(false);
 		}
 		else if (join == 2) {
+			army.setVisible(false);
 			if (army == kingdom.getPlayer()) {
 				playerInA = true;
 				kingdom.getMapScreen().getSidePanel().setActiveBattle(this);
@@ -268,6 +276,11 @@ public class Battle extends Actor implements Destination { // new battle system 
 			dArmiesRet.add(army);
 			log(army.getName() + " is retreating!", "yellow");
 		}
+		
+		// decrease wealth of retreating army and give to other party
+		int wealthChange = (int) (army.getParty().wealth * RETREAT_WEALTH_FACTOR);
+		army.getParty().wealth -= wealthChange;
+		spoils += wealthChange;
 	}
 	
 	// returns false if there's been a victory so the next phase can be skipped
@@ -464,7 +477,13 @@ public class Battle extends Actor implements Destination { // new battle system 
 
 		// change faction of city if siege
 		if (didAtkWin && siegeOf != null) {
-			siegeOf.changeFaction(siegeOf.getSiege().besieging);
+			Faction newOwner;
+			if (siegeOf.getSiege() == null) {
+//				System.out.println("ERROR: no siege!");
+				newOwner = aArmies.first().getFaction();
+			}
+			else newOwner = siegeOf.getSiege().besieging;
+			siegeOf.changeFaction(newOwner);
 		}
 		if (!didAtkWin && siegeOf != null) {
 			if (siegeOf.getSiege() != null) {
@@ -489,7 +508,10 @@ public class Battle extends Actor implements Destination { // new battle system 
 			if (!army.isGarrisoned()) army.setVisible(true);
 			army.nextTarget(); // 
 			
-			if (army.getParty().player) army.setTarget(null);
+			if (army.getParty().player) {
+//				army.setStopped(true);
+				army.setTarget(null);
+			}
 			
 			
 			victorContribution[i] = army.getParty().getAtk(); // for now just do atk.
